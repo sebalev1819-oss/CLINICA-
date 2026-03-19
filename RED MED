@@ -1,0 +1,252 @@
+<div align="center">
+
+<br/>
+
+```
+██████╗ ███████╗██╗  ██╗ █████╗ ██████╗ ███╗   ███╗███████╗██████╗ 
+██╔══██╗██╔════╝██║  ██║██╔══██╗██╔══██╗████╗ ████║██╔════╝██╔══██╗
+██████╔╝█████╗  ███████║███████║██████╔╝██╔████╔██║█████╗  ██║  ██║
+██╔══██╗██╔══╝  ██╔══██║██╔══██║██╔══██╗██║╚██╔╝██║██╔══╝  ██║  ██║
+██║  ██║███████╗██║  ██║██║  ██║██████╔╝██║ ╚═╝ ██║███████╗██████╔╝
+╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚═╝     ╚═╝╚══════╝╚═════╝ 
+                                                                      
+        E R P  ·  C L Í N I C A  D E  R E H A B I L I T A C I Ó N
+```
+
+<br/>
+
+**Sistema operativo completo para clínicas de rehabilitación con 12 consultorios simultáneos.**  
+*Agenda · Facturación · Historia Clínica · CRM · BI · Stock · RRHH · Contabilidad*
+
+<br/>
+
+![Version](https://img.shields.io/badge/versión-2.5-0ea5e9?style=for-the-badge&logo=github)
+![HTML](https://img.shields.io/badge/HTML5-standalone-f97316?style=for-the-badge&logo=html5&logoColor=white)
+![ChartJS](https://img.shields.io/badge/Chart.js-4.4-ff6384?style=for-the-badge&logo=chartdotjs&logoColor=white)
+![License](https://img.shields.io/badge/licencia-MIT-10b981?style=for-the-badge)
+![Status](https://img.shields.io/badge/estado-activo-10b981?style=for-the-badge)
+
+<br/>
+
+[🚀 **Demo en Vivo**](https://tu-usuario.github.io/rehabmed-erp) · [📋 **Documentación**](#documentación) · [🧩 **Módulos**](#módulos) · [⚙️ **Instalación**](#instalación)
+
+<br/>
+
+---
+
+</div>
+
+## ¿Qué es RehabMed ERP?
+
+RehabMed ERP es un sistema de gestión clínica **100% standalone** (un solo archivo `.html`) diseñado específicamente para clínicas de rehabilitación. No requiere instalación, servidores ni base de datos para la demo. Abrilo con doble click en cualquier navegador moderno.
+
+> **Inspirado en los mejores del mundo:** WebPT, MEDITECH Expanse, ERPNext Healthcare, Salesforce Health Cloud y Microsoft Dynamics 365 Healthcare — tomando lo mejor de cada uno y adaptándolo al modelo operativo LATAM.
+
+<br/>
+
+## 📸 Capturas
+
+<div align="center">
+
+| Dashboard Principal | Agenda & Turnos |
+|---|---|
+| KPIs en tiempo real + 12 consultorios | Grilla horaria + lista + vista semanal |
+
+| Historia Clínica | CRM Pipeline |
+|---|---|
+| Evoluciones + plan de tratamiento | Kanban Leads → Fidelización |
+
+| BI & Analytics | Facturación |
+|---|---|
+| EBITDA + ranking profesionales | Caja del día + glosas |
+
+</div>
+
+<br/>
+
+## 🧩 Módulos
+
+### 🏥 Operativo
+| Módulo | Descripción |
+|---|---|
+| **📊 Dashboard** | KPIs en tiempo real, mapa de 12 consultorios, facturación vs cobrado, no-show semanal, alertas críticas |
+| **🗓️ Agenda & Turnos** | Vista lista / grilla horaria / semanal. Gestión de estados: confirmado, en curso, no show, lista de espera |
+| **⚠️ No-Show & Alertas** | Registro de ausentismo, score de riesgo IA, penalizaciones automáticas, reagendamiento |
+
+### 🩺 Clínico
+| Módulo | Descripción |
+|---|---|
+| **👥 Pacientes & HCl** | Historia clínica digital, evoluciones por sesión, plan de tratamiento, score de comportamiento |
+| **👨‍⚕️ Profesionales** | Alta por especialidad / matrícula / tipo, métricas de performance, liquidación automática |
+
+### 💼 Administrativo
+| Módulo | Descripción |
+|---|---|
+| **💰 Facturación** | Caja del día por método, transacciones, integración obras sociales, gestión de glosas |
+| **📦 Stock & Insumos** | Inventario con semáforo de criticidad, alertas de reposición automáticas, órdenes de compra |
+| **🏢 Proveedores** | Alta de proveedores, órdenes de compra, historial de pagos |
+| **👤 RRHH** | Contratos, horarios, ausencias, liquidación de honorarios automática |
+
+### 📈 Estratégico
+| Módulo | Descripción |
+|---|---|
+| **🎯 CRM & Ventas** | Pipeline Kanban, análisis de canales de origen, conversión lead→paciente |
+| **📣 Marketing** | Campañas activas, tasa de apertura, NPS Score, reenganche de pacientes inactivos |
+| **📊 BI & Analytics** | EBITDA, ROI marketing, ranking profesionales, facturación por especialidad |
+| **📒 Contabilidad** | P&L semestral, flujo de caja, cuentas a pagar/cobrar, desglose de egresos |
+
+<br/>
+
+## ⚡ KPIs que monitorea en tiempo real
+
+```
+📅 Turnos del día          →  87 / 102  (85% ocupación)
+💰 Facturación mensual     →  $1.92M ARS
+📉 No-Show Rate            →  6.4%  (objetivo: <8%)
+👥 Pacientes activos       →  284   (+12 este mes)
+🏆 EBITDA                  →  $384K (20% margen)
+📊 ROI Marketing           →  4.2x
+```
+
+<br/>
+
+## 🚀 Instalación
+
+### Opción A — Abrir directo (más fácil)
+
+```bash
+# 1. Cloná el repositorio
+git clone https://github.com/tu-usuario/rehabmed-erp.git
+
+# 2. Abrí el archivo
+open rehabmed-erp/index.html
+# o doble click en el archivo
+```
+
+### Opción B — GitHub Pages (recomendado)
+
+1. Fork este repositorio
+2. Ir a **Settings → Pages**
+3. Source: `main` branch, carpeta `/ (root)`
+4. Tu ERP queda en: `https://tu-usuario.github.io/rehabmed-erp`
+
+### Opción C — Netlify Drop (30 segundos)
+
+1. Ir a [netlify.com/drop](https://netlify.com/drop)
+2. Arrastrar `index.html`
+3. URL pública instantánea ✅
+
+<br/>
+
+## 🛠️ Stack Técnico
+
+```
+Frontend:    HTML5 · CSS3 Variables · Vanilla JS ES6+
+Gráficos:    Chart.js 4.4.1 (CDN)
+Tipografía:  Outfit + JetBrains Mono (Google Fonts)
+Arquitectura: Single-file app (zero dependencies locales)
+Tamaño:      ~126 KB (sin imágenes externas)
+Compatibilidad: Chrome 90+ · Firefox 88+ · Edge 90+ · Safari 14+
+```
+
+<br/>
+
+## 📐 Arquitectura del Sistema
+
+```
+rehabmed-erp/
+│
+├── index.html              ← Sistema completo (ERP standalone)
+├── README.md               ← Este archivo
+└── docs/
+    ├── arquitectura.md     ← Diagrama técnico
+    └── roadmap.md          ← Fases de desarrollo
+```
+
+<br/>
+
+## 🗺️ Roadmap
+
+### ✅ Fase 1 — MVP (Completado)
+- [x] Dashboard con KPIs en tiempo real
+- [x] Agenda y gestión de turnos (12 consultorios)
+- [x] Historia Clínica digital
+- [x] Facturación básica y caja
+- [x] Gestión de profesionales
+- [x] Stock e insumos con alertas
+
+### 🔄 Fase 2 — En Desarrollo
+- [ ] Backend con Supabase (base de datos real)
+- [ ] Autenticación por roles (admin / recepción / profesional)
+- [ ] API WhatsApp para confirmaciones automáticas
+- [ ] Integración obras sociales LATAM
+- [ ] App Mobile (PWA)
+
+### 🔮 Fase 3 — Próximamente
+- [ ] IA para predicción de no-show
+- [ ] Asignación inteligente de turnos
+- [ ] Multi-clínica (franquicias)
+- [ ] Telemedicina integrada
+- [ ] Integración con dispositivos de monitoreo
+- [ ] Multi-país / multi-moneda (Argentina · Chile · México)
+
+<br/>
+
+## 🌍 Diferencial LATAM
+
+Este ERP está diseñado específicamente para el modelo operativo de clínicas en América Latina:
+
+- ✅ **Gestión de obras sociales y prepagas** (OSDE, Swiss Medical, IOMA, Galeno, PAMI, Medifé)
+- ✅ **Control de glosas** — uno de los mayores problemas de cobranza en la región
+- ✅ **No-show crítico** — en LATAM la tasa puede ser 15–30% sin gestión activa
+- ✅ **Liquidación de honorarios** por sesión, porcentaje o paquete
+- ✅ **Multi-moneda** preparado (ARS / USD / CLP / MXN)
+- ✅ **Facturación en pesos** con soporte para ajuste por inflación
+
+<br/>
+
+## 🏗️ Basado en benchmark mundial
+
+| Sistema | Qué adoptamos |
+|---|---|
+| **WebPT** | Flujo rehab, billing por sesión, score de comportamiento |
+| **MEDITECH Expanse** | Estado consultorios en tiempo real, alertas IA |
+| **ERPNext Healthcare** | Agenda inteligente, recordatorios automáticos |
+| **Dynamics 365** | Estructura multi-entidad, módulo financiero |
+| **Salesforce Health Cloud** | CRM pipeline completo, fidelización |
+
+<br/>
+
+## 👥 Créditos
+
+Desarrollado por **Care Assistance · Care U · Siempre · VitaCare**
+
+Diseñado para clínicas de rehabilitación con foco en:
+- Operación de 12 consultorios simultáneos
+- Kinesiólogos, fisioterapeutas, psicólogos, médicos
+- Pacientes particulares y financiadores (obras sociales / prepagas)
+- Gestión operativa, clínica, administrativa y comercial integrada
+
+<br/>
+
+## 📄 Licencia
+
+```
+MIT License — libre para uso personal y comercial.
+Si lo usás en tu clínica o lo adaptás, 
+un ⭐ en el repo es bienvenido 🙏
+```
+
+<br/>
+
+---
+
+<div align="center">
+
+**Hecho con 🏥 para el sistema de salud LATAM**
+
+*"El sistema operativo de tu clínica"*
+
+[![GitHub stars](https://img.shields.io/github/stars/tu-usuario/rehabmed-erp?style=social)](https://github.com/tu-usuario/rehabmed-erp)
+
+</div>
