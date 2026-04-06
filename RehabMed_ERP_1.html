@@ -1095,6 +1095,21 @@ tbody tr:last-child td{border-bottom:none;}
           <div id="hcl-evoluciones"></div>
         </div>
       </div>
+      
+      <!-- HISTORIAL DE TURNOS -->
+      <div class="card card-pad" style="margin-top:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div class="hcl-section-title" style="margin-bottom:0">📅 Historial de Turnos</div>
+          <button class="btn btn-emerald btn-sm" onclick="openModal('modalNuevoTurno')">+ Nuevo Turno</button>
+        </div>
+        <div class="table-wrap" style="max-height:250px;overflow-y:auto">
+          <table>
+            <thead><tr><th>Fecha / Hora</th><th>Profesional</th><th>Especialidad</th><th>Tipo</th><th>Estado</th></tr></thead>
+            <tbody id="hcl-turnos"></tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- CUENTA CORRIENTE -->
       <div class="card card-pad" style="margin-top:14px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
@@ -3317,7 +3332,7 @@ function badgeClass(v) {
     'Presencial':'badge-emerald','Cobrado':'badge-emerald','Pendiente fact':'badge-amber',
     'Vencido':'badge-rose','Bajo':'badge-amber','Crítico':'badge-rose','Normal':'badge-emerald',
     'Alto':'badge-rose','Medio':'badge-amber','Entregado':'badge-emerald','En tránsito':'badge-sky',
-    'Pendiente OC':'badge-amber',
+    'Pendiente OC':'badge-amber','Cancelado':'badge-rose','Reprogramado':'badge-violet',
   };
   return map[v] || 'badge-slate';
 }
@@ -3510,7 +3525,47 @@ function showHCL(id) {
   
   _currentHCLPacId = p.id;
   renderCtaCte(p.id);
+  renderTurnosPaciente(p.nombre);
   showModule('hclinica', null);
+}
+
+function renderTurnosPaciente(nombre) {
+  const tb = document.getElementById('hcl-turnos');
+  if(!tb) return;
+  
+  let turnos = AGENDA_DATA.filter(t => t.pac === nombre).map(t => ({...t, fecha: "Hoy"}));
+  let noshows = NOSHOW_DATA.filter(t => t.pac === nombre).map(t => ({
+    hora: t.hora, pac: t.pac, prof: t.prof, esp: "S/D", tipo: "Presencial", estado: "No Show", fecha: "Hoy"
+  }));
+  
+  let allTurnos = turnos.concat(noshows);
+  
+  // Agregar historial simulado para mostrar toda la variedad de estados
+  allTurnos.push({ fecha: "Próxima Semana", hora: "09:00", prof: "Profesor Asignado", esp: "Kinesiología", tipo: "Presencial", estado: "Pendiente" });
+  allTurnos.push({ fecha: "Ayer", hora: "14:00", prof: "Profesor Asignado", esp: "Kinesiología", tipo: "Presencial", estado: "Reprogramado" });
+  allTurnos.push({ fecha: "Hace 1 semana", hora: "10:30", prof: "Profesor Asignado", esp: "Kinesiología", tipo: "Presencial", estado: "Confirmado" });
+  allTurnos.push({ fecha: "Hace 2 semanas", hora: "11:00", prof: "Profesor Asignado", esp: "Kinesiología", tipo: "Presencial", estado: "Cancelado" });
+  allTurnos.push({ fecha: "Hace 3 semanas", hora: "09:30", prof: "Profesor Asignado", esp: "Kinesiología", tipo: "Presencial", estado: "No Show" });
+
+  // Mejorar el historial tomando datos reales del paciente
+  const realProf = allTurnos.find(t => t.prof !== "Profesor Asignado")?.prof || "Dra. Moreno";
+  const realEsp = allTurnos.find(t => t.esp !== "Kinesiología" && t.esp !== "S/D")?.esp || "Kinesiología";
+  
+  allTurnos = allTurnos.map(t => {
+    if(t.prof === "Profesor Asignado") t.prof = realProf;
+    if(t.esp === "Kinesiología" || t.esp === "S/D") t.esp = realEsp;
+    return t;
+  });
+
+  tb.innerHTML = allTurnos.map(t => `
+    <tr>
+      <td><div style="font-weight:600;color:var(--text)">${t.fecha}</div><div style="font-size:10px;color:var(--text4)">${t.hora}</div></td>
+      <td>${t.prof}</td>
+      <td style="font-size:12px;color:var(--text3)">${t.esp}</td>
+      <td><span class="badge ${badgeClass(t.tipo)}" style="font-size:10px">${t.tipo}</span></td>
+      <td><span class="badge ${badgeClass(t.estado)}" style="font-size:10px">${t.estado}</span></td>
+    </tr>
+  `).join('');
 }
 
 function renderEvolucionesList(evos) {
