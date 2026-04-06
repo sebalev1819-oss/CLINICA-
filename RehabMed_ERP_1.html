@@ -3252,6 +3252,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderContabilidad();
   renderColaFacturacion();
   previewTemplate('tplConfirm');
+  bindModalBackdrops();
 
   setTimeout(() => {
     initCharts();
@@ -3297,17 +3298,28 @@ function updateClock() {
 // ═══════════════════════════════════════════════════════
 //  MODAL
 // ═══════════════════════════════════════════════════════
-function openModal(id){ document.getElementById(id).classList.add('open'); }
-function closeModal(id){ document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-overlay').forEach(o => {
-  o.addEventListener('click', e => { if(e.target === o) o.classList.remove('open'); });
-});
+function openModal(id){ 
+  const el = document.getElementById(id);
+  if(el) el.classList.add('open');
+}
+function closeModal(id){ 
+  const el = document.getElementById(id);
+  if(el) el.classList.remove('open');
+}
+
+// Bind modal close on backdrop click — deferred to DOMContentLoaded
+function bindModalBackdrops() {
+  document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', e => { if(e.target === o) o.classList.remove('open'); });
+  });
+}
 
 // ═══════════════════════════════════════════════════════
 //  TOAST
 // ═══════════════════════════════════════════════════════
 function showToast(msg) {
   const t = document.getElementById('toast');
+  if(!t) return;
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3500);
@@ -3320,17 +3332,12 @@ function switchTab(btn, targetId) {
   const tabs = btn.closest('.tabs');
   tabs.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
-  const parent = tabs.nextElementSibling;
-  // hide/show sibling divs
-  let el = tabs.nextElementSibling;
-  let idx = 0;
-  const ids = ['tab-lista','tab-grilla','tab-semana'];
+  const ids = ['tab-lista','tab-grilla'];
   ids.forEach(id => {
     const d = document.getElementById(id);
     if(d) d.style.display = (id === targetId) ? 'block' : 'none';
   });
   if(targetId === 'tab-grilla') renderScheduleGrid();
-  if(targetId === 'tab-semana') initChartSemana();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -3372,21 +3379,25 @@ function renderConsultorios() {
 }
 
 // ═══════════════════════════════════════════════════════
-//  RENDER AGENDA & CONFIRMACION
+//  CONFIRM ACTION POPUP & RENDER AGENDA
 // ═══════════════════════════════════════════════════════
 let pendingAction = null;
 
 function askConfirmAction(title, desc, icon, callback) {
-  document.getElementById('confirmTitle').textContent = title;
-  document.getElementById('confirmDesc').textContent = desc;
-  document.getElementById('confirmIcon').textContent = icon;
+  const titleEl = document.getElementById('confirmTitle');
+  const descEl  = document.getElementById('confirmDesc');
+  const iconEl  = document.getElementById('confirmIcon');
+  if(titleEl) titleEl.textContent = title;
+  if(descEl)  descEl.textContent  = desc;
+  if(iconEl)  iconEl.textContent  = icon;
   pendingAction = callback;
-  
   const btn = document.getElementById('confirmBtnAction');
-  btn.onclick = () => {
-    if(pendingAction) pendingAction();
-    closeModal('modalConfirmAction');
-  };
+  if(btn) {
+    btn.onclick = () => {
+      if(pendingAction) pendingAction();
+      closeModal('modalConfirmAction');
+    };
+  }
   openModal('modalConfirmAction');
 }
 
@@ -3395,40 +3406,35 @@ function updateTurnoEstado(pac, newState, toastMsg) {
   if(idx > -1) {
     AGENDA_DATA[idx].estado = newState;
     showToast(toastMsg);
-    
-    // Volver a renderizar filtrando adecuadamente
-    const activeTabObj = document.querySelector('#mod-agenda .tabs .tab.active');
+    const activeTabObj = document.querySelector('#mod-agenda .tabs .tab[data-view].active');
     const viewType = activeTabObj ? activeTabObj.getAttribute('data-view') : 'hoy';
     _reapplyAgendaFilter(viewType);
   }
 }
 
 function _reapplyAgendaFilter(viewType) {
-  let filteredData = AGENDA_DATA;
-  if(viewType === 'hoy') filteredData = AGENDA_DATA.filter(t => t.rango === 'hoy');
-  else if(viewType === 'semana') filteredData = AGENDA_DATA.filter(t => t.rango === 'hoy' || t.rango === 'semana');
-  renderAgenda(filteredData);
+  let filtered = AGENDA_DATA;
+  if(viewType === 'hoy')    filtered = AGENDA_DATA.filter(t => t.rango === 'hoy');
+  else if(viewType === 'semana') filtered = AGENDA_DATA.filter(t => t.rango === 'hoy' || t.rango === 'semana');
+  renderAgenda(filtered);
 }
 
 function setAgendaView(btn, viewType) {
   document.getElementById('tab-lista').style.display = 'block';
-  document.getElementById('tab-grilla').style.display = 'none';
-
+  const grilla = document.getElementById('tab-grilla');
+  if(grilla) grilla.style.display = 'none';
   const tabs = btn.closest('.tabs');
   tabs.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
-  btn.setAttribute('data-view', viewType);
-
-  let title = '';
-  if (viewType === 'hoy') title = 'Hoy — Todos los turnos';
-  else if (viewType === 'semana') title = 'Esta Semana — Próximos 7 días';
-  else if (viewType === 'mes') title = 'Este Mes — Histórico y Próximos';
-  
+  const titles = { hoy: 'Hoy — Todos los turnos', semana: 'Esta Semana — Próximos 7 días', mes: 'Este Mes — Histórico y Próximos' };
   const titleEl = document.getElementById('agendaDateTitle');
-  if(titleEl) titleEl.textContent = title;
-  
+  if(titleEl) titleEl.textContent = titles[viewType] || '';
   _reapplyAgendaFilter(viewType);
 }
+
+let _pendingAgendaAction = null; // alias kept for safety
+
+// (askConfirmAction, updateTurnoEstado, _reapplyAgendaFilter, setAgendaView defined above)
 
 function renderAgenda(data) {
   const tb = document.getElementById('agendaTbody');
