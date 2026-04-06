@@ -1003,7 +1003,7 @@ tbody tr:last-child td{border-bottom:none;}
           </div>
           <div class="table-wrap">
             <table id="agendaTable">
-              <thead><tr><th>Fecha / Hora</th><th>Paciente</th><th>Profesional</th><th>Consultorio</th><th>Especialidad</th><th>Tipo</th><th>Estado</th><th style="min-width:140px">Acciones</th></tr></thead>
+              <thead><tr><th>Fecha / Hora</th><th>Paciente</th><th>Profesional</th><th>Consultorio</th><th>Especialidad</th><th>Tipo</th><th>Cobertura / Facturación</th><th>Estado</th><th style="min-width:140px">Acciones</th></tr></thead>
               <tbody id="agendaTbody"></tbody>
             </table>
           </div>
@@ -2126,27 +2126,83 @@ Respondé con el número de tu opción 👇</textarea>
 
 <!-- ═══ MODAL: NUEVO TURNO ═══ -->
 <div class="modal-overlay" id="modalNuevoTurno">
-  <div class="modal">
+  <div class="modal" style="width:560px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-      <div class="modal-title">+ Nuevo Turno</div>
+      <div class="modal-title">📅 Nuevo Turno</div>
       <button class="modal-close" onclick="closeModal('modalNuevoTurno')">×</button>
     </div>
+
+    <!-- PACIENTE + PROFESIONAL -->
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Paciente</label><select class="form-select" id="turnoPac"><option value="">Seleccionar...</option><option>Rodrigo Sánchez</option><option>Marcela Fontana</option><option>Tomás Villanueva</option><option>Graciela Molina</option><option>Sebastián Castro</option><option>Ana Belén Torres</option><option>Jorge Navarro</option><option>Patricia Ruiz</option></select></div>
-      <div class="form-group"><label class="form-label">Profesional</label><select class="form-select" id="turnoProf"><option value="">Seleccionar...</option><option>Dra. Valeria Moreno</option><option>Dr. Matías Herrera</option><option>Lic. Sofía Arcuri</option><option>Dr. Ignacio Ríos</option><option>Dra. Camila Pérez</option><option>Dr. Lucas Bravo</option></select></div>
+      <div class="form-group"><label class="form-label">Paciente *</label><select class="form-select" id="turnoPac" onchange="autoFillCobertura()"><option value="">Seleccionar...</option><option>Rodrigo Sánchez</option><option>Marcela Fontana</option><option>Tomás Villanueva</option><option>Graciela Molina</option><option>Sebastián Castro</option><option>Ana Belén Torres</option><option>Jorge Navarro</option><option>Patricia Ruiz</option></select></div>
+      <div class="form-group"><label class="form-label">Profesional *</label><select class="form-select" id="turnoProf"><option value="">Seleccionar...</option><option>Dra. Valeria Moreno</option><option>Dr. Matías Herrera</option><option>Lic. Sofía Arcuri</option><option>Dr. Ignacio Ríos</option><option>Dra. Camila Pérez</option><option>Dr. Lucas Bravo</option></select></div>
     </div>
+
+    <!-- FECHA + HORA -->
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Fecha</label><input class="form-input" id="turnoFecha" type="date"></div>
-      <div class="form-group"><label class="form-label">Hora</label><input class="form-input" id="turnoHora" type="time" value="09:00"></div>
+      <div class="form-group"><label class="form-label">Fecha *</label><input class="form-input" id="turnoFecha" type="date"></div>
+      <div class="form-group"><label class="form-label">Hora *</label><input class="form-input" id="turnoHora" type="time" value="09:00"></div>
     </div>
+
+    <!-- ESPECIALIDAD + TIPO -->
     <div class="form-row">
       <div class="form-group"><label class="form-label">Especialidad</label><select class="form-select" id="turnoEsp"><option>Kinesiología</option><option>Fisioterapia</option><option>Psicología</option><option>Traumatología</option><option>Neurología</option><option>Deportología</option></select></div>
-      <div class="form-group"><label class="form-label">Tipo</label><select class="form-select" id="turnoTipo"><option>Presencial</option><option>Virtual</option><option>Recurrente</option></select></div>
+      <div class="form-group"><label class="form-label">Tipo de Atención</label><select class="form-select" id="turnoTipo"><option>Presencial</option><option>Virtual</option><option>Recurrente</option></select></div>
     </div>
-    <div class="form-group"><label class="form-label">Notas</label><input class="form-input" placeholder="Observaciones opcionales..."></div>
+
+    <!-- COBERTURA / PAGO -->
+    <div style="border-top:1px solid var(--border);margin:16px 0 14px;padding-top:14px">
+      <div style="font-size:11px;font-weight:700;color:var(--sky);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px">💳 Cobertura y Facturación</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Tipo de Pago *</label>
+          <select class="form-select" id="turnoPagoTipo" onchange="onPagoTipoChange()">
+            <option value="particular">Particular (pago directo)</option>
+            <option value="obra_social">Obra Social</option>
+            <option value="prepaga">Prepaga / Medicina Privada</option>
+            <option value="art">ART (Accidente de Trabajo)</option>
+          </select>
+        </div>
+        <div class="form-group" id="coberturaEmpresaGroup">
+          <label class="form-label">Empresa / Entidad</label>
+          <select class="form-select" id="turnoCobertura">
+            <option value="">Seleccionar entidad...</option>
+            <optgroup label="Obras Sociales">
+              <option>IOMA</option><option>PAMI</option><option>OSDE 210</option><option>OSDE 310</option><option>OSDE 410</option><option>OSECAC</option><option>OSAM</option><option>OSPRERA</option><option>Unión Personal</option><option>OSDOP</option>
+            </optgroup>
+            <optgroup label="Prepagas">
+              <option>Swiss Medical SMG20</option><option>Swiss Medical SMG30</option><option>Galeno Azul</option><option>Galeno Oro</option><option>Medifé</option><option>Accord Salud</option><option>Omint</option><option>Sancor Salud</option><option>Jerarca</option>
+            </optgroup>
+            <optgroup label="ART">
+              <option>Provincia ART</option><option>Liberty ART</option><option>Galeno ART</option><option>SMG ART</option><option>Prevención ART</option><option>Mapfre ART</option><option>Asociart ART</option>
+            </optgroup>
+          </select>
+        </div>
+      </div>
+      <div class="form-row" id="nroAutorizacionRow">
+        <div class="form-group">
+          <label class="form-label">N\u00ba Autorizaci\u00f3n / Credencial <span style="color:var(--rose);font-weight:800">*</span></label>
+          <input class="form-input" id="turnoNroAut" placeholder="Ej: AUT-2024-123456" oninput="this.style.borderColor='';this.style.boxShadow=''">
+          <div style="font-size:10px;color:var(--rose);margin-top:4px;font-weight:600">⚠️ Obligatoria para facturar a la entidad</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Copago del Paciente ($)</label>
+          <input class="form-input" id="turnoCopago" type="number" min="0" placeholder="0" value="0">
+        </div>
+      </div>
+    </div>
+
+    <!-- PREVIEW DE FACTURACION -->
+    <div id="facturacionPreview" style="border-radius:10px;padding:12px 16px;margin-bottom:14px;display:none">
+      <div style="font-size:11px;font-weight:700;margin-bottom:4px" id="facPrevTitle"></div>
+      <div style="font-size:12px;line-height:1.6" id="facPrevDesc"></div>
+    </div>
+
+    <div class="form-group"><label class="form-label">Notas (opcional)</label><input class="form-input" id="turnoNotas" placeholder="Observaciones del turno..."></div>
+
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:6px">
       <button class="btn btn-ghost" onclick="closeModal('modalNuevoTurno')">Cancelar</button>
-      <button class="btn btn-sky" onclick="guardarNuevoTurno()">Confirmar Turno</button>
+      <button class="btn btn-sky" onclick="guardarNuevoTurno()">🗓 Confirmar Turno</button>
     </div>
   </div>
 </div>
@@ -2760,6 +2816,130 @@ function renderCRMTable(){
       <td><button class="btn btn-sky btn-sm" style="font-size:10px" onclick="event.stopPropagation();showLeadDetail(${l.id})">Ver Ficha</button></td>
     </tr>`;
   }).join('');
+}
+
+function guardarNuevoTurno() {
+  const pac   = document.getElementById('turnoPac').value;
+  const prof  = document.getElementById('turnoProf').value;
+  const fecha = document.getElementById('turnoFecha').value;
+  const hora  = document.getElementById('turnoHora').value;
+  const esp   = document.getElementById('turnoEsp').value;
+  const tipo  = document.getElementById('turnoTipo').value;
+  const pagoTipo  = document.getElementById('turnoPagoTipo')?.value || 'particular';
+  const cobertura = pagoTipo !== 'particular' ? document.getElementById('turnoCobertura')?.value : 'Particular';
+  const nroAut    = document.getElementById('turnoNroAut')?.value || '';
+  const copago    = document.getElementById('turnoCopago')?.value || '0';
+
+  if(!pac || !prof) { showToast('⚠️ Seleccioné paciente y profesional'); return; }
+
+  // Validación obligatoria: si no es particular, DEBE tener entidad y autorización
+  if (pagoTipo !== 'particular') {
+    const coberturaEl = document.getElementById('turnoCobertura');
+    const nroAutEl    = document.getElementById('turnoNroAut');
+    let errores = [];
+
+    if (!cobertura || cobertura === '') {
+      coberturaEl.style.borderColor = 'var(--rose)';
+      coberturaEl.style.boxShadow = '0 0 0 3px rgba(244,63,94,0.15)';
+      errores.push('entidad de cobertura');
+    } else {
+      coberturaEl.style.borderColor = '';
+      coberturaEl.style.boxShadow = '';
+    }
+
+    if (!nroAut || nroAut.trim() === '') {
+      nroAutEl.style.borderColor = 'var(--rose)';
+      nroAutEl.style.boxShadow = '0 0 0 3px rgba(244,63,94,0.15)';
+      errores.push('Nº de autorización');
+    } else {
+      nroAutEl.style.borderColor = '';
+      nroAutEl.style.boxShadow = '';
+    }
+
+    if (errores.length > 0) {
+      showToast(`🚫 Sin cobertura — Falta: ${errores.join(' y ')}. Es obligatoria para facturar a la obra social/prepaga/ART.`);
+      return;
+    }
+  }
+
+  const turnoFechaDisplay = fecha ? new Date(fecha+'T00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}) : 'Hoy';
+  const nextMonthNum = fecha ? (new Date(fecha+'T00:00').getMonth() + 2) : (new Date().getMonth() + 2);
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const nextMes = meses[(nextMonthNum - 1) % 12];
+
+  const nuevoTurno = {
+    fecha: turnoFechaDisplay, rango: 'hoy', hora: hora || '09:00',
+    pac, prof, c: 7, esp, tipo, estado: 'Pendiente',
+    pagoTipo, cobertura: pagoTipo === 'particular' ? 'Particular' : cobertura,
+    nroAut, copago: parseFloat(copago),
+    facturacionInfo: pagoTipo === 'particular'
+      ? 'Facturar al cliente directamente'
+      : `Crédito ${cobertura} — Facturar 1-5 de ${nextMes}`
+  };
+
+  AGENDA_DATA.unshift(nuevoTurno);
+  _reapplyAgendaFilter('hoy');
+  closeModal('modalNuevoTurno');
+  showToast(`✅ Turno agregado · ${pac} · ${nuevoTurno.facturacionInfo}`);
+}
+
+function onPagoTipoChange() {
+  const tipo = document.getElementById('turnoPagoTipo').value;
+  const empresaGroup = document.getElementById('coberturaEmpresaGroup');
+  const autRow = document.getElementById('nroAutorizacionRow');
+  const preview = document.getElementById('facturacionPreview');
+  const prevTitle = document.getElementById('facPrevTitle');
+  const prevDesc = document.getElementById('facPrevDesc');
+
+  if (tipo === 'particular') {
+    empresaGroup.style.display = 'none';
+    autRow.style.display = 'none';
+    preview.style.background = 'rgba(16,185,129,0.08)';
+    preview.style.border = '1px solid rgba(16,185,129,0.25)';
+    preview.style.display = 'block';
+    prevTitle.style.color = 'var(--emerald)';
+    prevTitle.textContent = '💰 Pago Particular — Facturación Inmediata';
+    prevDesc.innerHTML = 'Se factura <strong>directamente al paciente</strong> al finalizar la sesión. Pago en el momento (efectivo, tarjeta o transferencia).';
+  } else {
+    empresaGroup.style.display = 'block';
+    autRow.style.display = 'grid';
+    const now = new Date();
+    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const facMes = meses[nextMonth.getMonth()];
+    const iconMap = { obra_social:'🏥', prepaga:'💳', art:'⚠️' };
+    const labelMap = { obra_social:'Obra Social', prepaga:'Prepaga / Medicina Privada', art:'ART' };
+    preview.style.background = 'rgba(14,165,233,0.08)';
+    preview.style.border = '1px solid rgba(14,165,233,0.25)';
+    preview.style.display = 'block';
+    prevTitle.style.color = 'var(--sky2)';
+    prevTitle.textContent = `${iconMap[tipo]} ${labelMap[tipo]} — Crédito a la Entidad`;
+    prevDesc.innerHTML = `El costo de la sesión <strong>no se cobra al paciente</strong> (puede haber copago). Se genera un <strong>crédito a nombre de la entidad seleccionada</strong> y se factura en bloque entre el <strong>1° y 5° de ${facMes}</strong>.`;
+  }
+}
+
+function autoFillCobertura() {
+  const pac = document.getElementById('turnoPac').value;
+  const p = PACIENTES_DATA.find(x => x.nombre === pac);
+  if(!p || !p.cob) return;
+  const pagoSelect = document.getElementById('turnoPagoTipo');
+  if (p.cob === 'Particular') {
+    pagoSelect.value = 'particular';
+  } else if (p.cob.includes('ART')) {
+    pagoSelect.value = 'art';
+  } else if (['IOMA','PAMI','OSDE','OSECAC','OSDOP','Unión Personal','OSPRERA','OSAM'].some(x => p.cob.includes(x))) {
+    pagoSelect.value = 'obra_social';
+  } else {
+    pagoSelect.value = 'prepaga';
+  }
+  onPagoTipoChange();
+  // Auto-select cobertura
+  const cobSelect = document.getElementById('turnoCobertura');
+  if(cobSelect) {
+    const opts = Array.from(cobSelect.options);
+    const match = opts.find(o => p.cob.includes(o.value) || o.value.includes(p.cob.split(' ')[0]));
+    if(match) cobSelect.value = match.value;
+  }
 }
 
 function renderCRMActivity(){
@@ -3439,7 +3619,18 @@ let _pendingAgendaAction = null; // alias kept for safety
 function renderAgenda(data) {
   const tb = document.getElementById('agendaTbody');
   if(!tb) return;
-  tb.innerHTML = data.map(t => `
+  tb.innerHTML = data.map(t => {
+    // Cobertura badge
+    const cob = t.cobertura || 'Particular';
+    const facInfo = t.facturacionInfo || (cob === 'Particular' ? 'Facturar al cliente' : `Crédito ${cob}`);
+    const isParticular = cob === 'Particular' || !t.pagoTipo || t.pagoTipo === 'particular';
+    const cobBadge = isParticular
+      ? `<span class="badge badge-emerald" style="font-size:10px">💰 Particular</span>`
+      : `<span class="badge badge-sky" style="font-size:10px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${facInfo}">🏥 ${cob}</span>`;
+    const facLine = isParticular
+      ? `<div style="font-size:9px;color:var(--emerald);margin-top:2px">Cobro inmediato</div>`
+      : `<div style="font-size:9px;color:var(--sky2);margin-top:2px">${facInfo.replace(`Crédito ${cob} — `, '')}</div>`;
+    return `
     <tr>
       <td><div style="font-weight:600;color:var(--text)">${t.fecha||'Hoy'}</div><div style="font-size:10px;color:var(--text4)">${t.hora}</div></td>
       <td><div style="display:flex;align-items:center;gap:8px">
@@ -3447,18 +3638,19 @@ function renderAgenda(data) {
         <span style="font-weight:600;color:var(--text)">${t.pac}</span>
       </div></td>
       <td style="color:var(--text3)">${t.prof}</td>
-      <td><span style="background:rgba(255,255,255,0.05);padding:3px 10px;border-radius:6px;font-size:12px">C${t.c}</span></td>
+      <td><span style="background:rgba(255,255,255,0.05);padding:3px 10px;border-radius:6px;font-size:12px">C${t.c||'—'}</span></td>
       <td style="font-size:12px;color:var(--text3)">${t.esp}</td>
       <td><span class="badge ${badgeClass(t.tipo)}">${t.tipo}</span></td>
+      <td><div>${cobBadge}${facLine}</div></td>
       <td><span class="badge ${badgeClass(t.estado)}">${t.estado}</span></td>
       <td><div style="display:flex;gap:5px">
-        <button class="btn btn-ghost btn-sm" style="padding:4px 8px" onclick="askConfirmAction('Confirmar Asistencia', '¿Desea confirmar la asistencia voluntaria del turno de ${t.pac}?', '✅', () => updateTurnoEstado('${t.pac}', 'Confirmado', '✅ Turno confirmado para ${t.pac}'))" title="Confirmar">✓</button>
+        <button class="btn btn-ghost btn-sm" style="padding:4px 8px" onclick="askConfirmAction('Confirmar Asistencia', '¿Desea confirmar la asistencia del turno de ${t.pac}?', '✅', () => updateTurnoEstado('${t.pac}', 'Confirmado', '✅ Turno confirmado para ${t.pac}'))" title="Confirmar">✓</button>
         <button class="btn btn-ghost btn-sm" style="padding:4px 8px;color:var(--rose)" onclick="askConfirmAction('Registrar No-Show', '¿Está seguro de registrar No-Show para ${t.pac}? Esto afectará su score.', '❌', () => updateTurnoEstado('${t.pac}', 'No Show', '❌ No-Show registrado para ${t.pac}'))" title="No Show">✗</button>
         <button class="btn btn-ghost btn-sm" style="padding:4px 8px;color:var(--rose)" onclick="askConfirmAction('Cancelar Turno', '¿Desea cancelar definitivamente el turno de ${t.pac}?', '🗑️', () => updateTurnoEstado('${t.pac}', 'Cancelado', '🗑️ Turno cancelado para ${t.pac}'))" title="Cancelar">🗑</button>
         <button class="btn btn-ghost btn-sm" style="padding:4px 8px;color:var(--amber)" onclick="askConfirmAction('Reprogramar Turno', '¿Desea abrir la ventana de reprogramación para ${t.pac}?', '↻', () => { updateTurnoEstado('${t.pac}', 'Reprogramado', '⏳ Turno preparado para reprogramar'); openModal('modalNuevoTurno'); })" title="Reprogramar">↻</button>
       </div></td>
-    </tr>
-  `).join('');
+    </tr>`;
+  }).join('');
 }
 
 function filterAgenda(q) {
