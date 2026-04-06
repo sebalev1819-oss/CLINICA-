@@ -527,6 +527,85 @@ tbody tr:last-child td{border-bottom:none;}
   .form-row{grid-template-columns:1fr;}
 }
 
+/* ── AGENDA TIMELINE ── */
+.agenda-hour-block{
+  display:grid;grid-template-columns:70px 1fr;gap:16px;margin-bottom:24px;
+}
+.agenda-hour-label{
+  display:flex;flex-direction:column;align-items:flex-end;padding-top:14px;
+  border-right:2px solid var(--border);padding-right:14px;
+}
+.agenda-hour-time{
+  font-family:var(--mono);font-size:15px;font-weight:800;color:var(--sky2);line-height:1;
+}
+.agenda-hour-count{
+  font-size:9px;color:var(--text4);margin-top:4px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;
+}
+.agenda-hour-cards{
+  display:flex;flex-direction:column;gap:10px;
+}
+.agenda-turno-card{
+  display:flex;background:var(--bg3);border:1px solid var(--border);border-radius:12px;
+  overflow:hidden;transition:var(--transition);box-shadow:0 1px 4px rgba(0,0,0,0.04);
+}
+.agenda-turno-card:hover{border-color:var(--border2);box-shadow:0 4px 16px rgba(0,0,0,0.08);transform:translateY(-1px);}
+.agenda-card-left-bar{
+  width:4px;flex-shrink:0;
+}
+.agenda-card-body{
+  flex:1;padding:14px 16px;display:flex;flex-direction:column;gap:10px;
+}
+.agenda-card-top{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+}
+.agenda-card-meta{
+  display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+}
+.agenda-meta-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 9px;border-radius:6px;font-size:11px;font-weight:600;
+}
+.agenda-card-actions{
+  display:flex;gap:6px;flex-wrap:wrap;padding-top:8px;border-top:1px solid rgba(0,0,0,0.05);
+}
+.agenda-action-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:5px 12px;border-radius:7px;font-size:11px;font-weight:700;font-family:var(--font);
+  cursor:pointer;border:1px solid;transition:var(--transition);
+}
+.agenda-action-btn.confirm{
+  background:rgba(5,150,105,0.08);color:var(--emerald);border-color:rgba(5,150,105,0.2);
+}
+.agenda-action-btn.confirm:hover{background:rgba(5,150,105,0.18);border-color:rgba(5,150,105,0.4);}
+.agenda-action-btn.noshow{
+  background:rgba(244,63,94,0.06);color:var(--rose);border-color:rgba(244,63,94,0.18);
+}
+.agenda-action-btn.noshow:hover{background:rgba(244,63,94,0.15);border-color:rgba(244,63,94,0.35);}
+.agenda-action-btn.cancel{
+  background:rgba(244,63,94,0.06);color:var(--rose);border-color:rgba(244,63,94,0.18);
+}
+.agenda-action-btn.cancel:hover{background:rgba(244,63,94,0.15);border-color:rgba(244,63,94,0.35);}
+.agenda-action-btn.reschedule{
+  background:rgba(217,119,6,0.06);color:var(--amber);border-color:rgba(217,119,6,0.2);
+}
+.agenda-action-btn.reschedule:hover{background:rgba(217,119,6,0.15);border-color:rgba(217,119,6,0.35);}
+
+/* ── CONSULTORIOS MEJORADO ── */
+.consultorio-item{
+  border-radius:14px;padding:16px;
+  display:flex;flex-direction:column;gap:8px;
+  transition:var(--transition);cursor:pointer;
+  position:relative;overflow:hidden;
+}
+.consultorio-item::after{
+  content:'';position:absolute;bottom:0;right:0;width:50px;height:50px;
+  border-radius:50%;opacity:0.08;
+}
+.consultorio-item.ocupado::after{background:var(--sky);}
+.consultorio-item.libre::after{background:var(--emerald);}
+.consultorio-item.limpieza::after{background:var(--amber);}
+.consultorio-item:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.09);}
+
 /* ── CONTAB TABS ── */
 .contab-tab{background:var(--surface);border:1px solid var(--border);color:var(--text3);transition:var(--transition);}
 .contab-tab:hover{background:var(--bg2);color:var(--text);}
@@ -990,22 +1069,43 @@ tbody tr:last-child td{border-bottom:none;}
 
       <!-- TAB: LISTA -->
       <div id="tab-lista">
-        <div class="card" style="margin-bottom:16px">
-          <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:14px;font-weight:700;color:var(--text)" id="agendaDateTitle">Hoy — Todos los turnos</span>
-            <div style="display:flex;gap:8px;align-items:center">
-            <button class="btn btn-ghost btn-sm" onclick="exportAgendaCSV()">Exportar CSV</button>
-            <div class="search-box">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input type="text" placeholder="Buscar paciente..." oninput="filterAgenda(this.value)">
-            </div>
+        <!-- BARRA SUPERIOR -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:4px;height:32px;background:linear-gradient(180deg,var(--sky),var(--violet));border-radius:2px"></div>
+            <div>
+              <div style="font-size:15px;font-weight:800;color:var(--text)" id="agendaDateTitle">Hoy — Todos los turnos</div>
+              <div style="font-size:11px;color:var(--text4);margin-top:1px" id="agendaSubtitle">Cargando turnos...</div>
             </div>
           </div>
-          <div class="table-wrap">
-            <table id="agendaTable">
-              <thead><tr><th>Fecha / Hora</th><th>Paciente</th><th>Profesional</th><th>Consultorio</th><th>Especialidad</th><th>Tipo</th><th>Cobertura / Facturación</th><th>Estado</th><th style="min-width:140px">Acciones</th></tr></thead>
-              <tbody id="agendaTbody"></tbody>
-            </table>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div class="search-box">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" placeholder="Buscar paciente o profesional..." oninput="filterAgenda(this.value)">
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="exportAgendaCSV()">Exportar CSV</button>
+            <div id="agendaViewToggle" style="display:flex;gap:4px;background:rgba(0,0,0,0.04);border:1px solid var(--border);border-radius:8px;padding:3px">
+              <button id="agendaViewCards" onclick="setAgendaDisplayMode('cards',this)" style="padding:4px 10px;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:var(--sky);color:#fff;transition:all 0.15s">&#9776; Cards</button>
+              <button id="agendaViewTable" onclick="setAgendaDisplayMode('table',this)" style="padding:4px 10px;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:transparent;color:var(--text3);transition:all 0.15s">&#9776; Tabla</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARDS VIEW (default) -->
+        <div id="agendaCardsView">
+          <!-- Hora separators + cards rendered by renderAgenda -->
+          <div id="agendaTimeline"></div>
+        </div>
+
+        <!-- TABLE VIEW (alternate) -->
+        <div id="agendaTableView" style="display:none">
+          <div class="card">
+            <div class="table-wrap">
+              <table id="agendaTable">
+                <thead><tr><th>Hora</th><th>Paciente</th><th>Profesional</th><th>Consultorio</th><th>Especialidad</th><th>Tipo</th><th>Cobertura</th><th>Estado</th><th style="min-width:130px">Acciones</th></tr></thead>
+                <tbody id="agendaTbody"></tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -3543,19 +3643,50 @@ function badgeClass(v) {
 function renderConsultorios() {
   const g = document.getElementById('consultoriosGrid');
   if(!g) return;
-  g.innerHTML = CONSULTORIOS_DATA.map(c => `
-    <div class="consultorio-item ${c.estado}" onclick="showToast('C${c.id} · ${c.esp} · ${c.estado === 'ocupado' ? c.pac : c.estado}')">
-      <div class="consultorio-num">
-        <span style="font-weight:800">C${c.id}</span>
-        <div class="estado-dot dot-${c.estado}"></div>
+  const STATUS_CFG = {
+    ocupado: { color:'var(--sky)',  bg:'rgba(3,105,161,0.07)',  border:'rgba(3,105,161,0.18)',  icon:'🔵', label:'Ocupado',  dot:'dot-ocupado'  },
+    libre:   { color:'var(--emerald)', bg:'rgba(5,150,105,0.07)', border:'rgba(5,150,105,0.2)',  icon:'🟢', label:'Libre',    dot:'dot-libre'    },
+    limpieza:{ color:'var(--amber)', bg:'rgba(217,119,6,0.07)', border:'rgba(217,119,6,0.2)',   icon:'🟡', label:'Limpieza', dot:'dot-limpieza' },
+  };
+  g.innerHTML = CONSULTORIOS_DATA.map(c => {
+    const cfg = STATUS_CFG[c.estado] || STATUS_CFG.libre;
+    const hasProf = c.prof && c.prof !== '—';
+    const hasPac  = c.pac  && c.pac  !== '—';
+    const profInitials = hasProf ? c.prof.split(' ').map(w=>w[0]).slice(0,2).join('') : '—';
+    const occupancyColor = c.estado === 'ocupado' ? 'var(--sky)' : c.estado === 'libre' ? 'var(--emerald)' : 'var(--amber)';
+    return `
+    <div class="consultorio-item ${c.estado}" style="background:${cfg.bg};border:1px solid ${cfg.border}"
+         onclick="showToast('${cfg.icon} C${c.id} (${c.esp}) — ${c.estado === 'ocupado' ? c.pac : cfg.label}')">
+      <!-- TOP: numéro + estado dot -->
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="display:flex;align-items:center;gap:7px">
+          <div style="background:${cfg.color}22;border:1px solid ${cfg.color}33;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:${cfg.color}">C${c.id}</div>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--text)">Cons. ${c.id}</div>
+            <div style="font-size:9px;color:var(--text4)">${c.esp}</div>
+          </div>
+        </div>
+        <div class="estado-dot ${cfg.dot}" style="width:9px;height:9px;box-shadow:0 0 8px ${cfg.color}"></div>
       </div>
-      <div class="consultorio-esp">${c.esp}</div>
-      <div class="consultorio-status" style="color:${c.estado==='ocupado'?'var(--sky2)':c.estado==='libre'?'var(--emerald)':'var(--amber)'}">
-        ${c.estado==='ocupado'?'● Ocupado':c.estado==='libre'?'○ Libre':'◌ Limpieza'}
+
+      <!-- STATUS BADGE -->
+      <div style="display:flex;align-items:center;gap:5px;margin-top:6px">
+        <span style="font-size:10px;font-weight:700;color:${cfg.color};background:${cfg.color}15;padding:2px 8px;border-radius:99px;border:1px solid ${cfg.color}25">${cfg.icon} ${cfg.label}</span>
       </div>
-      ${c.pac !== '—' ? `<div style="font-size:10px;color:var(--text4);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.pac}</div>` : ''}
-    </div>
-  `).join('');
+
+      <!-- PROF + PAC (if ocupado) -->
+      ${c.estado === 'ocupado' ? `
+      <div style="margin-top:8px;display:flex;align-items:center;gap:6px">
+        <div style="width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--sky),var(--violet));display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;flex-shrink:0">${profInitials}</div>
+        <div style="min-width:0">
+          <div style="font-size:10px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.prof}</div>
+          ${hasPac ? `<div style="font-size:9px;color:var(--text4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">👤 ${c.pac}</div>` : ''}
+        </div>
+      </div>` : c.estado === 'limpieza' ? `
+      <div style="margin-top:8px;font-size:10px;color:var(--amber);font-weight:600">🧹 En desinfección</div>` : `
+      <div style="margin-top:8px;font-size:10px;color:var(--emerald);font-weight:600">✓ Disponible</div>`}
+    </div>`;
+  }).join('');
 }
 
 // ═══════════════════════════════════════════════════════
@@ -3616,40 +3747,160 @@ let _pendingAgendaAction = null; // alias kept for safety
 
 // (askConfirmAction, updateTurnoEstado, _reapplyAgendaFilter, setAgendaView defined above)
 
+function setAgendaDisplayMode(mode, btn) {
+  const cardsView = document.getElementById('agendaCardsView');
+  const tableView = document.getElementById('agendaTableView');
+  const btnCards = document.getElementById('agendaViewCards');
+  const btnTable = document.getElementById('agendaViewTable');
+  if (!cardsView) return;
+  if (mode === 'cards') {
+    cardsView.style.display = 'block';
+    tableView.style.display = 'none';
+    btnCards.style.background = 'var(--sky)'; btnCards.style.color = '#fff';
+    btnTable.style.background = 'transparent'; btnTable.style.color = 'var(--text3)';
+  } else {
+    cardsView.style.display = 'none';
+    tableView.style.display = 'block';
+    btnTable.style.background = 'var(--sky)'; btnTable.style.color = '#fff';
+    btnCards.style.background = 'transparent'; btnCards.style.color = 'var(--text3)';
+  }
+}
+
+const ESTADO_COLOR = {
+  'Confirmado':'var(--emerald)','En curso':'var(--sky)','Pendiente':'var(--amber)',
+  'No Show':'var(--rose)','Cancelado':'var(--rose)','Reprogramado':'var(--violet)','Lista espera':'var(--violet)'
+};
+const ESTADO_BG = {
+  'Confirmado':'rgba(5,150,105,0.1)','En curso':'rgba(14,165,233,0.1)','Pendiente':'rgba(217,119,6,0.1)',
+  'No Show':'rgba(244,63,94,0.1)','Cancelado':'rgba(244,63,94,0.1)','Reprogramado':'rgba(124,58,237,0.1)'
+};
+
 function renderAgenda(data) {
+  // Always update table body
   const tb = document.getElementById('agendaTbody');
-  if(!tb) return;
-  tb.innerHTML = data.map(t => {
-    // Cobertura badge
-    const cob = t.cobertura || 'Particular';
-    const facInfo = t.facturacionInfo || (cob === 'Particular' ? 'Facturar al cliente' : `Crédito ${cob}`);
-    const isParticular = cob === 'Particular' || !t.pagoTipo || t.pagoTipo === 'particular';
-    const cobBadge = isParticular
-      ? `<span class="badge badge-emerald" style="font-size:10px">💰 Particular</span>`
-      : `<span class="badge badge-sky" style="font-size:10px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${facInfo}">🏥 ${cob}</span>`;
-    const facLine = isParticular
-      ? `<div style="font-size:9px;color:var(--emerald);margin-top:2px">Cobro inmediato</div>`
-      : `<div style="font-size:9px;color:var(--sky2);margin-top:2px">${facInfo.replace(`Crédito ${cob} — `, '')}</div>`;
+  if(tb) {
+    tb.innerHTML = data.map(t => {
+      const cob = t.cobertura||'Particular';
+      const isP = !t.pagoTipo || t.pagoTipo==='particular';
+      const facInfo = t.facturacionInfo||(isP?'Cobro inmediato':`Crédito ${cob}`);
+      const cobBadge = isP
+        ? `<span class="badge badge-emerald" style="font-size:10px">💰 Particular</span>`
+        : `<span class="badge badge-sky" style="font-size:10px" title="${facInfo}">🏥 ${cob}</span>`;
+      const facLine = isP
+        ? `<div style="font-size:9px;color:var(--emerald);margin-top:2px">Cobro inmediato</div>`
+        : `<div style="font-size:9px;color:var(--sky2);margin-top:2px">${facInfo.replace(`Crédito ${cob} — `,'')}</div>`;
+      return `<tr>
+        <td><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--sky2)">${t.hora}</div><div style="font-size:10px;color:var(--text4)">${t.fecha||'Hoy'}</div></td>
+        <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar avatar-sm" style="width:28px;height:28px;font-size:10px">${t.pac.split(' ').map(w=>w[0]).slice(0,2).join('')}</div><span style="font-weight:600;color:var(--text)">${t.pac}</span></div></td>
+        <td style="font-size:12px;color:var(--text3)">${t.prof}</td>
+        <td><span style="background:rgba(3,105,161,0.08);color:var(--sky);padding:3px 10px;border-radius:6px;font-size:12px;font-weight:700">C${t.c||'—'}</span></td>
+        <td style="font-size:12px;color:var(--text3)">${t.esp}</td>
+        <td><span class="badge ${badgeClass(t.tipo)}">${t.tipo}</span></td>
+        <td><div>${cobBadge}${facLine}</div></td>
+        <td><span class="badge ${badgeClass(t.estado)}">${t.estado}</span></td>
+        <td><div style="display:flex;gap:4px">
+          <button class="btn btn-ghost btn-sm" style="padding:4px 8px" onclick="askConfirmAction('Confirmar Asistencia','¿Desea confirmar la asistencia del turno de ${t.pac}?','✅',()=>updateTurnoEstado('${t.pac}','Confirmado','✅ Turno confirmado para ${t.pac}'))" title="Confirmar">✓</button>
+          <button class="btn btn-ghost btn-sm" style="padding:4px 8px;color:var(--rose)" onclick="askConfirmAction('Registrar No-Show','¿Está seguro de registrar No-Show para ${t.pac}?','❌',()=>updateTurnoEstado('${t.pac}','No Show','❌ No-Show registrado para ${t.pac}'))" title="No Show">✗</button>
+          <button class="btn btn-ghost btn-sm" style="padding:4px 8px;color:var(--rose)" onclick="askConfirmAction('Cancelar Turno','¿Desea cancelar el turno de ${t.pac}?','🗑️',()=>updateTurnoEstado('${t.pac}','Cancelado','🗑️ Turno cancelado para ${t.pac}'))" title="Cancelar">🗑</button>
+          <button class="btn btn-ghost btn-sm" style="padding:4px 8px;color:var(--amber)" onclick="askConfirmAction('Reprogramar Turno','¿Desea reprogramar el turno de ${t.pac}?','↻',()=>{updateTurnoEstado('${t.pac}','Reprogramado','⏳ Turno listo para reprogramar');openModal('modalNuevoTurno');})" title="Reprogramar">↻</button>
+        </div></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Render cards timeline
+  const timeline = document.getElementById('agendaTimeline');
+  if(!timeline) return;
+
+  // Group by hour
+  const byHour = {};
+  data.forEach(t => {
+    const h = t.hora ? t.hora.substring(0,5) : '??:??';
+    if(!byHour[h]) byHour[h] = [];
+    byHour[h].push(t);
+  });
+  const sortedHours = Object.keys(byHour).sort();
+
+  const subtitle = document.getElementById('agendaSubtitle');
+  if(subtitle) subtitle.textContent = `${data.length} turno${data.length!==1?'s':''} · ${sortedHours.length} franja${sortedHours.length!==1?'s':''} horaria${sortedHours.length!==1?'s':''}`;
+
+  if(sortedHours.length === 0) {
+    timeline.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text4)">
+      <div style="font-size:40px;margin-bottom:12px">📅</div>
+      <div style="font-size:15px;font-weight:700;color:var(--text3)">Sin turnos para este período</div>
+      <div style="font-size:12px;margin-top:4px">Creá un nuevo turno usando el botón superior</div>
+    </div>`;
+    return;
+  }
+
+  timeline.innerHTML = sortedHours.map(hora => {
+    const turnos = byHour[hora];
     return `
-    <tr>
-      <td><div style="font-weight:600;color:var(--text)">${t.fecha||'Hoy'}</div><div style="font-size:10px;color:var(--text4)">${t.hora}</div></td>
-      <td><div style="display:flex;align-items:center;gap:8px">
-        <div class="avatar avatar-sm" style="width:28px;height:28px;font-size:10px">${t.pac.split(' ').map(w=>w[0]).slice(0,2).join('')}</div>
-        <span style="font-weight:600;color:var(--text)">${t.pac}</span>
-      </div></td>
-      <td style="color:var(--text3)">${t.prof}</td>
-      <td><span style="background:rgba(255,255,255,0.05);padding:3px 10px;border-radius:6px;font-size:12px">C${t.c||'—'}</span></td>
-      <td style="font-size:12px;color:var(--text3)">${t.esp}</td>
-      <td><span class="badge ${badgeClass(t.tipo)}">${t.tipo}</span></td>
-      <td><div>${cobBadge}${facLine}</div></td>
-      <td><span class="badge ${badgeClass(t.estado)}">${t.estado}</span></td>
-      <td><div style="display:flex;gap:5px">
-        <button class="btn btn-ghost btn-sm" style="padding:4px 8px" onclick="askConfirmAction('Confirmar Asistencia', '¿Desea confirmar la asistencia del turno de ${t.pac}?', '✅', () => updateTurnoEstado('${t.pac}', 'Confirmado', '✅ Turno confirmado para ${t.pac}'))" title="Confirmar">✓</button>
-        <button class="btn btn-ghost btn-sm" style="padding:4px 8px;color:var(--rose)" onclick="askConfirmAction('Registrar No-Show', '¿Está seguro de registrar No-Show para ${t.pac}? Esto afectará su score.', '❌', () => updateTurnoEstado('${t.pac}', 'No Show', '❌ No-Show registrado para ${t.pac}'))" title="No Show">✗</button>
-        <button class="btn btn-ghost btn-sm" style="padding:4px 8px;color:var(--rose)" onclick="askConfirmAction('Cancelar Turno', '¿Desea cancelar definitivamente el turno de ${t.pac}?', '🗑️', () => updateTurnoEstado('${t.pac}', 'Cancelado', '🗑️ Turno cancelado para ${t.pac}'))" title="Cancelar">🗑</button>
-        <button class="btn btn-ghost btn-sm" style="padding:4px 8px;color:var(--amber)" onclick="askConfirmAction('Reprogramar Turno', '¿Desea abrir la ventana de reprogramación para ${t.pac}?', '↻', () => { updateTurnoEstado('${t.pac}', 'Reprogramado', '⏳ Turno preparado para reprogramar'); openModal('modalNuevoTurno'); })" title="Reprogramar">↻</button>
-      </div></td>
-    </tr>`;
+    <div class="agenda-hour-block">
+      <div class="agenda-hour-label">
+        <div class="agenda-hour-time">${hora}</div>
+        <div class="agenda-hour-count">${turnos.length} turno${turnos.length!==1?'s':''}</div>
+      </div>
+      <div class="agenda-hour-cards">
+        ${turnos.map(t => {
+          const initials = t.pac.split(' ').map(w=>w[0]).slice(0,2).join('');
+          const cob = t.cobertura||'Particular';
+          const isP = !t.pagoTipo || t.pagoTipo==='particular';
+          const facInfo = t.facturacionInfo||(isP?'Cobro inmediato':`Crédito ${cob}`);
+          const estadoColor = ESTADO_COLOR[t.estado]||'var(--text3)';
+          const estadoBg = ESTADO_BG[t.estado]||'rgba(0,0,0,0.05)';
+          const cobTag = isP
+            ? `<span style="font-size:10px;padding:2px 7px;border-radius:5px;background:rgba(5,150,105,0.1);color:var(--emerald);font-weight:600">💰 Particular</span>`
+            : `<span style="font-size:10px;padding:2px 7px;border-radius:5px;background:rgba(14,165,233,0.1);color:var(--sky2);font-weight:600" title="${facInfo}">🏥 ${cob}</span>`;
+          const facTag = isP
+            ? `<span style="font-size:9px;color:var(--emerald)">Cobro inmediato</span>`
+            : `<span style="font-size:9px;color:var(--sky2)">${facInfo.replace(`Crédito ${cob} — `,'')}</span>`;
+          return `<div class="agenda-turno-card">
+            <div class="agenda-card-left-bar" style="background:${estadoColor}"></div>
+            <div class="agenda-card-body">
+              <div class="agenda-card-top">
+                <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+                  <div class="avatar" style="width:38px;height:38px;font-size:13px;flex-shrink:0;background:linear-gradient(135deg,${estadoColor}88,${estadoColor}44);color:${estadoColor};border:2px solid ${estadoColor}33">${initials}</div>
+                  <div style="min-width:0">
+                    <div style="font-weight:700;font-size:14px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.pac}</div>
+                    <div style="font-size:11px;color:var(--text3);margin-top:1px">${t.prof} · <span style="color:var(--sky2)">${t.esp}</span></div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+                  <span style="background:${estadoBg};color:${estadoColor};padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;border:1px solid ${estadoColor}33">${t.estado}</span>
+                </div>
+              </div>
+              <div class="agenda-card-meta">
+                <span class="agenda-meta-chip" style="background:rgba(3,105,161,0.07);color:var(--sky)">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  C${t.c||'—'}
+                </span>
+                <span class="agenda-meta-chip" style="background:rgba(0,0,0,0.04);color:var(--text3)">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  ${t.tipo}
+                </span>
+                ${cobTag}
+                ${facTag}
+              </div>
+              <div class="agenda-card-actions">
+                <button class="agenda-action-btn confirm" onclick="askConfirmAction('Confirmar Asistencia','¿Desea confirmar la asistencia de ${t.pac}?','✅',()=>updateTurnoEstado('${t.pac}','Confirmado','✅ Confirmado'))" title="Confirmar asistencia">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Confirmar
+                </button>
+                <button class="agenda-action-btn noshow" onclick="askConfirmAction('Registrar No-Show','¿Registrar No-Show para ${t.pac}?','❌',()=>updateTurnoEstado('${t.pac}','No Show','❌ No-Show'))" title="No Show">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> No-Show
+                </button>
+                <button class="agenda-action-btn cancel" onclick="askConfirmAction('Cancelar Turno','¿Cancelar el turno de ${t.pac}?','🗑️',()=>updateTurnoEstado('${t.pac}','Cancelado','🗑️ Cancelado'))" title="Cancelar">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> Cancelar
+                </button>
+                <button class="agenda-action-btn reschedule" onclick="askConfirmAction('Reprogramar','¿Reprogramar el turno de ${t.pac}?','↻',()=>{updateTurnoEstado('${t.pac}','Reprogramado','⏳ Listo para reprogramar');openModal('modalNuevoTurno');})" title="Reprogramar">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg> Reprogramar
+                </button>
+              </div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
   }).join('');
 }
 
