@@ -680,16 +680,45 @@ export function instalarContextMenuPacientes() {
     return card.getAttribute('data-prof-id');
   }
 
-  // Handler botones "Ver Agenda" y "Liquidar" de las cards profesional
+  // Handler botones de acción rápida en cards profesional
   document.addEventListener('click', (ev) => {
-    const btn = ev.target.closest('[data-prof-action]');
-    if (!btn) return;
-    ev.preventDefault();
-    ev.stopPropagation();
-    const action = btn.getAttribute('data-prof-action');
-    const profId = btn.getAttribute('data-prof-id-action');
-    if (action === 'ver-agenda') verAgendaProfesional(profId);
-    else if (action === 'liquidar') generarLiquidacionProf(profId);
+    // Profesional (cards)
+    const btnProf = ev.target.closest('[data-prof-action]');
+    if (btnProf) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      const action = btnProf.getAttribute('data-prof-action');
+      const profId = btnProf.getAttribute('data-prof-id-action');
+      if (action === 'ver-agenda') verAgendaProfesional(profId);
+      else if (action === 'liquidar') generarLiquidacionProf(profId);
+      return;
+    }
+
+    // Paciente (tabla)
+    const btnPac = ev.target.closest('[data-pac-action]');
+    if (btnPac) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      const action = btnPac.getAttribute('data-pac-action');
+      const pacId = btnPac.getAttribute('data-pac-id-action');
+      const paciente = (window.PACIENTES_DATA || []).find(p => String(p.id) === String(pacId));
+      if (action === 'agendar') {
+        if (typeof window.openModal === 'function') window.openModal('modalNuevoTurno');
+        setTimeout(() => {
+          const input = document.getElementById('turnoPac');
+          if (input && paciente) input.value = paciente.nombre;
+          if (typeof window.autoFillCobertura === 'function') window.autoFillCobertura();
+        }, 60);
+      } else if (action === 'ctacte') {
+        verCtaCte(pacId);
+      } else if (action === 'whatsapp') {
+        const tel = paciente?.tel || '';
+        if (!tel) { showToast('⚠️ El paciente no tiene teléfono registrado'); return; }
+        const nombre = paciente?.nombre || 'paciente';
+        const msg = encodeURIComponent(`Hola ${nombre}, te escribimos desde la clínica.`);
+        window.open(`https://wa.me/${tel.replace(/\D/g,'')}?text=${msg}`, '_blank');
+      }
+    }
   });
 
   // Click derecho
