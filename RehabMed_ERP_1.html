@@ -4131,7 +4131,7 @@ function renderProfesionales() {
     const nsColor = p.ns > 8 ? 'var(--rose)' : p.ns > 5 ? 'var(--amber)' : 'var(--emerald)';
     const [c1,c2] = gradients[i % gradients.length];
     return `
-    <div class="prof-card">
+    <div class="prof-card" data-prof-id="${p.id}" title="Doble click / click derecho para más opciones">
       <div class="prof-header">
         <div class="avatar avatar-md" style="background:linear-gradient(135deg,${c1},${c2})">${p.av}</div>
         <div class="prof-info" style="flex:1">
@@ -4152,8 +4152,8 @@ function renderProfesionales() {
         <span style="font-size:11px;color:var(--text3)">${pct}% cap.</span>
       </div>
       <div style="display:flex;gap:8px">
-        <button class="btn btn-emerald btn-sm" style="flex:1;justify-content:center" onclick="showToast('Agenda de ${p.nombre} cargada')">Ver Agenda</button>
-        <button class="btn btn-sky btn-sm" style="flex:1;justify-content:center" onclick="showToast('Liquidación de ${p.nombre}: $${(p.fact*0.4/1000).toFixed(0)}K generada')">Liquidar</button>
+        <button class="btn btn-emerald btn-sm" style="flex:1;justify-content:center" data-prof-action="ver-agenda" data-prof-id-action="${p.id}">Ver Agenda</button>
+        <button class="btn btn-sky btn-sm" style="flex:1;justify-content:center" data-prof-action="liquidar" data-prof-id-action="${p.id}">Liquidar</button>
       </div>
     </div>`;
   }).join('');
