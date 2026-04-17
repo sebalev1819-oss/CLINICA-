@@ -1,0 +1,18 @@
+{
+  "name": "rehabmed-erp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ERP para gestión de 12 consultorios — agenda, HC, stock, facturación.",
+  "type": "module",
+  "scripts": {
+    "dev":     "vite",
+    "build":   "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4"
+  },
+  "devDependencies": {
+    "vite": "^5.4.10"
+  }
+}

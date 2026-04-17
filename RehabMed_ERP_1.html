@@ -13,7 +13,9 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230369a1'/><text y='.9em' font-size='75' x='12'>🏥</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<style>
+<script type="module" src="/src/main.js"></script>
+<link rel="stylesheet" href="/src/styles/main.css">
+<style data-legacy-removed>
 :root{
   --bg:#f0f4f8;--bg2:#e8edf4;--bg3:#ffffff;--bg4:#f5f7fa;
   --surface:rgba(255,255,255,0.92);--surface2:rgba(241,245,249,0.8);
@@ -765,25 +767,19 @@ tbody tr:last-child td{border-bottom:none;}
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
       <span id="loginErrorMsg">Usuario o contraseña incorrectos</span>
     </div>
-    <form onsubmit="doLogin(event)" autocomplete="off">
+    <form id="loginForm" onsubmit="doLogin(event)" autocomplete="on">
       <div class="login-field">
-        <label for="loginUser">Usuario</label>
-        <div class="login-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
-        <input type="text" id="loginUser" placeholder="Ingresá tu usuario" autofocus>
+        <label for="loginUser">Email</label>
+        <div class="login-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+        <input type="email" id="loginUser" placeholder="tu@email.com" autocomplete="username" autofocus required>
       </div>
       <div class="login-field">
         <label for="loginPass">Contraseña</label>
         <div class="login-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
-        <input type="password" id="loginPass" placeholder="Ingresá tu contraseña">
+        <input type="password" id="loginPass" placeholder="Ingresá tu contraseña" autocomplete="current-password" required>
       </div>
-      <button type="submit" class="login-btn">Iniciar Sesión</button>
+      <button type="submit" class="login-btn" id="loginBtn">Iniciar Sesión</button>
     </form>
-    <div class="login-hint">
-      <div class="login-hint-title">Credenciales de prueba</div>
-      <div class="login-hint-row"><span class="login-hint-user">admin / admin123</span><span class="login-hint-role">Admin</span></div>
-      <div class="login-hint-row"><span class="login-hint-user">dra.moreno / moreno123</span><span class="login-hint-role">Profesional</span></div>
-      <div class="login-hint-row"><span class="login-hint-user">recepcion / recep123</span><span class="login-hint-role">Recepción</span></div>
-    </div>
     <div class="login-footer">RehabMed ERP v3.0 · © 2026</div>
   </div>
 </div>
@@ -1227,7 +1223,7 @@ tbody tr:last-child td{border-bottom:none;}
     <div class="module" id="mod-profesionales">
       <div class="page-header-row">
         <div><div class="page-title">Gestión de Profesionales</div><div class="page-sub">6 profesionales activos · Liquidación automática</div></div>
-        <button class="btn btn-violet">
+        <button class="btn btn-violet" onclick="openModal('modalNuevoProf')">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Agregar Profesional
         </button>
@@ -2232,10 +2228,18 @@ Respondé con el número de tu opción 👇</textarea>
       <button class="modal-close" onclick="closeModal('modalNuevoTurno')">×</button>
     </div>
 
-    <!-- PACIENTE + PROFESIONAL -->
+    <!-- PACIENTE + PROFESIONAL (con autocomplete: input + datalist) -->
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Paciente *</label><select class="form-select" id="turnoPac" onchange="autoFillCobertura()"><option value="">Seleccionar...</option><option>Rodrigo Sánchez</option><option>Marcela Fontana</option><option>Tomás Villanueva</option><option>Graciela Molina</option><option>Sebastián Castro</option><option>Ana Belén Torres</option><option>Jorge Navarro</option><option>Patricia Ruiz</option></select></div>
-      <div class="form-group"><label class="form-label">Profesional *</label><select class="form-select" id="turnoProf"><option value="">Seleccionar...</option><option>Dra. Valeria Moreno</option><option>Dr. Matías Herrera</option><option>Lic. Sofía Arcuri</option><option>Dr. Ignacio Ríos</option><option>Dra. Camila Pérez</option><option>Dr. Lucas Bravo</option></select></div>
+      <div class="form-group">
+        <label class="form-label">Paciente *</label>
+        <input class="form-input" id="turnoPac" list="pacientesList" placeholder="Escribí para buscar..." autocomplete="off" oninput="autoFillCobertura()">
+        <datalist id="pacientesList"></datalist>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Profesional *</label>
+        <input class="form-input" id="turnoProf" list="profesionalesList" placeholder="Escribí para buscar..." autocomplete="off">
+        <datalist id="profesionalesList"></datalist>
+      </div>
     </div>
 
     <!-- FECHA + HORA -->
@@ -2337,6 +2341,51 @@ Respondé con el número de tu opción 👇</textarea>
 </div>
 
 <!-- ═══ MODAL: NUEVO PACIENTE ═══ -->
+<!-- ═══ MODAL: NUEVO PROFESIONAL ═══ -->
+<div class="modal-overlay" id="modalNuevoProf">
+  <div class="modal" style="width:520px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div class="modal-title">👨‍⚕️ Nuevo Profesional</div>
+      <button class="modal-close" onclick="closeModal('modalNuevoProf')">×</button>
+    </div>
+    <div class="form-group"><label class="form-label">Nombre completo *</label><input class="form-input" id="profNombre" placeholder="Dra. Valeria Moreno"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Iniciales</label><input class="form-input" id="profIniciales" placeholder="auto (ej: VM)" maxlength="3"></div>
+      <div class="form-group"><label class="form-label">Matrícula *</label><input class="form-input" id="profMatricula" placeholder="MK-4821"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Especialidad *</label>
+        <select class="form-select" id="profEspecialidad">
+          <option>Kinesiología</option><option>Fisioterapia</option><option>Psicología</option>
+          <option>Traumatología</option><option>Neurología</option><option>Reumatología</option>
+          <option>Pediatría</option><option>Deportología</option><option>Fonoaudiología</option>
+          <option>Terapia Ocupacional</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Tipo</label>
+        <select class="form-select" id="profTipo">
+          <option>Full Time</option><option>Part Time</option><option>Freelance</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Consultorio asignado</label>
+      <select class="form-select" id="profConsultorio">
+        <option value="">Sin asignar</option>
+        <option value="1">C1 - Kinesiología</option><option value="2">C2 - Fisioterapia</option>
+        <option value="3">C3 - Psicología</option><option value="4">C4 - Traumatología</option>
+        <option value="5">C5 - Neurología</option><option value="6">C6 - Reumatología</option>
+        <option value="7">C7 - Pediatría</option><option value="8">C8 - Deportología</option>
+        <option value="9">C9 - Kinesiología</option><option value="10">C10 - Fisioterapia</option>
+        <option value="11">C11 - Psicología</option><option value="12">C12 - Traumatología</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px">
+      <button class="btn btn-ghost" onclick="closeModal('modalNuevoProf')">Cancelar</button>
+      <button class="btn btn-violet" onclick="guardarNuevoProfesional()">Guardar Profesional</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modalNuevoPaciente">
   <div class="modal" style="width:680px;max-height:90vh;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;position:sticky;top:-28px;background:var(--bg3);padding:12px 0;z-index:1">
@@ -2635,89 +2684,16 @@ Respondé con el número de tu opción 👇</textarea>
 
 <script>
 // ═══════════════════════════════════════════════════════
-//  AUTH — USERS & LOGIN
+//  AUTH — migrado a /src/auth.js (Supabase)
+//  doLogin, doLogout y applyRolePermissions los expone src/main.js
+//  como window.doLogin, window.doLogout (para onclick/onsubmit legacy).
 // ═══════════════════════════════════════════════════════
-const USERS = [
-  { id:1, user:'admin',      pass:'admin123',  nombre:'Sebastián Levin', rol:'admin',       iniciales:'SL' },
-  { id:2, user:'dra.moreno', pass:'moreno123', nombre:'Dra. Moreno',     rol:'profesional', iniciales:'DM' },
-  { id:3, user:'recepcion',  pass:'recep123',  nombre:'Ana Recepción',   rol:'recepcion',   iniciales:'AR' },
-  { id:4, user:'dr.rios',    pass:'rios123',   nombre:'Dr. Ríos',        rol:'profesional', iniciales:'DR' },
-];
-
-const ROLE_PERMISSIONS = {
-  admin: ['dashboard','agenda','pacientes','hclinica','profesionales','noshow','facturacion','stock','proveedores','rrhh','crm','marketing','bi','contabilidad','whatsapp','leadficha'],
-  profesional: ['dashboard','agenda','pacientes','hclinica','profesionales','noshow'],
-  recepcion: ['dashboard','agenda','pacientes','hclinica','noshow','stock','crm','whatsapp','leadficha'],
-};
-
-const ROLE_LABELS = { admin:'Administrador General', profesional:'Profesional Clínico', recepcion:'Recepción' };
-
-let _currentUser = null;
-
-function doLogin(e){
-  if(e) e.preventDefault();
-  const u = document.getElementById('loginUser').value.trim().toLowerCase();
-  const p = document.getElementById('loginPass').value;
-  const errEl = document.getElementById('loginError');
-
-  const user = USERS.find(x => x.user === u && x.pass === p);
-  if(!user){
-    errEl.classList.add('show');
-    document.getElementById('loginPass').value = '';
-    document.getElementById('loginPass').focus();
-    return;
-  }
-
-  _currentUser = user;
-  errEl.classList.remove('show');
-
-  // Update sidebar user card
-  document.getElementById('sidebarAvatar').textContent = user.iniciales;
-  document.getElementById('sidebarUserName').textContent = user.nombre;
-  document.getElementById('sidebarUserRole').textContent = ROLE_LABELS[user.rol] || user.rol;
-
-  // Apply role permissions
-  applyRolePermissions(user.rol);
-
-  // Transition
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('erpWrapper').classList.add('visible');
-
-  // Reset to dashboard
-  showModule('dashboard', null);
-}
-
-function doLogout(){
-  _currentUser = null;
-  document.getElementById('erpWrapper').classList.remove('visible');
-  document.getElementById('loginScreen').style.display = 'flex';
-  document.getElementById('loginUser').value = '';
-  document.getElementById('loginPass').value = '';
-  document.getElementById('loginError').classList.remove('show');
-  document.getElementById('loginUser').focus();
-
-  // Restore all nav items
-  document.querySelectorAll('.nav-item').forEach(n => {
-    n.style.display = '';
-  });
-}
-
-function applyRolePermissions(rol){
-  const allowed = ROLE_PERMISSIONS[rol] || [];
-  document.querySelectorAll('.nav-item').forEach(n => {
-    const onclick = n.getAttribute('onclick') || '';
-    const match = onclick.match(/showModule\('(\w+)'/);
-    if(match){
-      const modId = match[1];
-      n.style.display = allowed.includes(modId) ? '' : 'none';
-    }
-  });
-}
 
 // ═══════════════════════════════════════════════════════
 //  DATA
 // ═══════════════════════════════════════════════════════
-let CONSULTORIOS_DATA = [
+// Demo data — src/legacy-bridge.js la reemplaza con datos reales de Supabase al login
+window.CONSULTORIOS_DATA = window.CONSULTORIOS_DATA || [
   {id:1,esp:"Kinesiología",estado:"ocupado",prof:"Dra. Moreno",pac:"Rodrigo Sánchez"},
   {id:2,esp:"Fisioterapia",estado:"ocupado",prof:"Dr. Herrera",pac:"Ana Torres"},
   {id:3,esp:"Psicología",estado:"libre",prof:"Lic. Arcuri",pac:"—"},
@@ -2732,7 +2708,8 @@ let CONSULTORIOS_DATA = [
   {id:12,esp:"Traumatología",estado:"limpieza",prof:"—",pac:"—"},
 ];
 
-let AGENDA_DATA = [
+// Demo data — src/legacy-bridge.js la reemplaza con datos reales de Supabase al login
+window.AGENDA_DATA = window.AGENDA_DATA || [
   {fecha:"Hoy",rango:"hoy",hora:"08:00",pac:"Rodrigo Sánchez",prof:"Dra. Moreno",c:1,esp:"Kinesiología",tipo:"Presencial",estado:"Confirmado"},
   {fecha:"Hoy",rango:"hoy",hora:"08:30",pac:"Ana Torres",prof:"Dr. Herrera",c:2,esp:"Fisioterapia",tipo:"Presencial",estado:"Confirmado"},
   {fecha:"Hoy",rango:"hoy",hora:"09:00",pac:"Tomás Villanueva",prof:"Dra. Moreno",c:1,esp:"Kinesiología",tipo:"Presencial",estado:"Pendiente"},
@@ -2753,7 +2730,8 @@ let AGENDA_DATA = [
   {fecha:"04/04/2025",rango:"mes",hora:"16:00",pac:"María Domínguez",prof:"Dr. Herrera",c:2,esp:"Fisioterapia",tipo:"Presencial",estado:"Confirmado"}
 ];
 
-let PACIENTES_DATA = [
+// Demo data — src/legacy-bridge.js reemplaza con datos reales de Supabase al login
+window.PACIENTES_DATA = window.PACIENTES_DATA || [
   {id:1,ref:'PAC-2025-0001',nombre:"Rodrigo Sánchez",dni:"31.445.892",cob:"OSDE 310",diag:"Rotura LCA post-quirúrgico",ses:24,prox:"Hoy 10:30",est:"Activo",score:98,deuda:0},
   {id:2,ref:'PAC-2025-0002',nombre:"Marcela Fontana",dni:"27.112.445",cob:"Swiss Medical",diag:"Cervicalgia crónica",ses:8,prox:"Hoy 11:00",est:"Activo",score:87,deuda:4200},
   {id:3,ref:'PAC-2025-0003',nombre:"Tomás Villanueva",dni:"40.228.113",cob:"Particular",diag:"Lumbalgia aguda",ses:3,prox:"Mañana 09:00",est:"Nuevo",score:100,deuda:0},
@@ -2764,7 +2742,8 @@ let PACIENTES_DATA = [
   {id:8,ref:'PAC-2025-0008',nombre:"Patricia Ruiz",dni:"33.881.002",cob:"Swiss Medical",diag:"Síndrome de túnel carpiano",ses:5,prox:"Hoy 15:00",est:"Nuevo",score:100,deuda:0},
 ];
 
-let PROFESIONALES_DATA = [
+// Demo data — src/legacy-bridge.js reemplaza con datos reales de Supabase al login
+window.PROFESIONALES_DATA = window.PROFESIONALES_DATA || [
   {id:1,ref:'PRO-2025-0001',nombre:"Dra. Valeria Moreno",av:"VM",esp:"Kinesiología",mat:"MK-4821",tipo:"Full Time",c:1,turnos:142,fact:285400,ns:4.2},
   {id:2,ref:'PRO-2025-0002',nombre:"Dr. Matías Herrera",av:"MH",esp:"Fisioterapia",mat:"FT-2934",tipo:"Full Time",c:2,turnos:118,fact:236000,ns:7.1},
   {id:3,ref:'PRO-2025-0003',nombre:"Lic. Sofía Arcuri",av:"SA",esp:"Psicología",mat:"PS-1102",tipo:"Part Time",c:3,turnos:76,fact:190000,ns:3.9},
