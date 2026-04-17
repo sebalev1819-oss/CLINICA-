@@ -5,6 +5,7 @@ import { doLogin, doLogout, restoreSession } from './auth.js';
 import { cargarAgenda, suscribirRealtime, filterAgenda } from './agenda.js';
 import { instalarBridge } from './legacy-bridge.js';
 import { instalarHC } from './historia-clinica.js';
+import { instalarReports } from './reports.js';
 
 // Exponer al HTML (onclick inline en el HTML legacy)
 window.doLogin  = doLogin;
@@ -33,6 +34,12 @@ async function iniciarERP() {
 
   // 1b. Historia clínica: conecta el módulo HC a Supabase
   instalarHC();
+
+  // 1c. Reports: sobrescribe updateDashboardKPIs con cálculos reales
+  instalarReports();
+  if (typeof window.updateDashboardKPIs === 'function') {
+    window.updateDashboardKPIs();
+  }
 
   // 2. Realtime + agenda de hoy
   suscribirRealtime();
