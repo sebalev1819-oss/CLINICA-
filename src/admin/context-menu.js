@@ -303,26 +303,9 @@ async function darAlta(pacId, nuevoEstado) {
 // ============================================================
 //  MENÚ CONTEXTUAL PACIENTE
 // ============================================================
-export function instalarContextMenuPacientes() {
-  // Delegación global: click derecho en cualquier [data-pac-id] o row de pacientes
-  document.addEventListener('contextmenu', (ev) => {
-    // Buscar el row de paciente — el HTML tiene `data-pac-id` o clickea en botones con ID
-    const tr = ev.target.closest('[data-pac-id], tr[data-id]');
-    if (!tr) return;
-
-    // Extraer ID (data-pac-id o data-id)
-    const pacId = tr.getAttribute('data-pac-id') || tr.getAttribute('data-id');
-    if (!pacId) return;
-
-    // Verificar que el row esté dentro del módulo pacientes
-    const modPac = tr.closest('#mod-pacientes');
-    if (!modPac) return;
-
-    ev.preventDefault();
-
-    const paciente = (window.PACIENTES_DATA || []).find(p => String(p.id) === String(pacId));
-
-    abrirMenu(ev.clientX, ev.clientY, [
+function construirMenuPaciente(pacId) {
+  const paciente = (window.PACIENTES_DATA || []).find(p => String(p.id) === String(pacId));
+  return [
       { icon: '👁️',  label: 'Ver ficha completa',    action: () => window.showHCL && window.showHCL(pacId) },
       { icon: '📅',  label: 'Historial de turnos',   action: () => verHistorialTurnos(pacId) },
       { icon: '📆',  label: 'Próximos turnos',       action: () => verProximosTurnos(pacId) },
@@ -350,8 +333,38 @@ export function instalarContextMenuPacientes() {
                      },
                      disabled: !paciente?.tel
       },
-    ]);
+  ];
+}
+
+export function instalarContextMenuPacientes() {
+  // Helper: encontrar el row de paciente en el módulo pacientes
+  function findPacienteId(target) {
+    const tr = target.closest('[data-pac-id], tr[data-id]');
+    if (!tr) return null;
+    const pacId = tr.getAttribute('data-pac-id') || tr.getAttribute('data-id');
+    if (!pacId) return null;
+    if (!tr.closest('#mod-pacientes')) return null;
+    return pacId;
+  }
+
+  // Click derecho
+  document.addEventListener('contextmenu', (ev) => {
+    const pacId = findPacienteId(ev.target);
+    if (!pacId) return;
+    // No interceptar si el click es sobre un botón o link dentro del row
+    if (ev.target.closest('button, a, input, select')) return;
+    ev.preventDefault();
+    abrirMenu(ev.clientX, ev.clientY, construirMenuPaciente(pacId));
   });
 
-  console.log('[ContextMenu] ✅ Click derecho en pacientes activado');
+  // Doble click — alternativa más natural en web
+  document.addEventListener('dblclick', (ev) => {
+    const pacId = findPacienteId(ev.target);
+    if (!pacId) return;
+    if (ev.target.closest('button, a, input, select')) return;
+    ev.preventDefault();
+    abrirMenu(ev.clientX, ev.clientY, construirMenuPaciente(pacId));
+  });
+
+  console.log('[ContextMenu] ✅ Click derecho y doble click en pacientes activados');
 }
