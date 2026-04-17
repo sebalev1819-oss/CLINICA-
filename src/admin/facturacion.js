@@ -495,23 +495,32 @@ async function abrirModalPago(facturaId) {
 //  FACTURAR TURNOS FINALIZADOS (masivo)
 // ============================================================
 async function facturarTurnosFinalizados() {
-  const { data: turnos } = await supabase
+  // 1. Traer turnos finalizados
+  const { data: turnos, error: errTurnos } = await supabase
     .from('turnos')
     .select('id, pacientes(nombre)')
-    .eq('estado', 'Finalizado')
-    .not('id', 'in',
-      `(select turno_id from factura_items where turno_id is not null)`
-    );
+    .eq('estado', 'Finalizado');
 
-  if (!turnos || turnos.length === 0) {
+  if (errTurnos) { showToast(`❌ ${errTurnos.message}`); return; }
+
+  // 2. Traer turno_ids ya facturados (subquery no soportada, se filtra en cliente)
+  const { data: itemsExistentes } = await supabase
+    .from('factura_items')
+    .select('turno_id')
+    .not('turno_id', 'is', null);
+
+  const yaFacturados = new Set((itemsExistentes || []).map(i => i.turno_id));
+  const pendientes = (turnos || []).filter(t => !yaFacturados.has(t.id));
+
+  if (pendientes.length === 0) {
     showToast('✅ No hay turnos finalizados sin facturar');
     return;
   }
 
-  if (!confirm(`¿Facturar ${turnos.length} turnos finalizados? Se emite un recibo por cada uno.`)) return;
+  if (!confirm(`¿Facturar ${pendientes.length} turnos finalizados? Se emite un recibo por cada uno.`)) return;
 
   let ok = 0, errores = 0;
-  for (const t of turnos) {
+  for (const t of pendientes) {
     const { error } = await supabase.rpc('facturar_turno', { p_turno_id: t.id });
     if (error) { errores++; console.error(error); } else { ok++; }
   }
@@ -519,6 +528,8 @@ async function facturarTurnosFinalizados() {
   showToast(`✅ ${ok} facturas emitidas${errores > 0 ? ` · ⚠️ ${errores} errores` : ''}`);
   const cont = document.getElementById('facContent');
   if (cont) await renderListaFacturas(cont);
+  const kpis = document.getElementById('facKPIs');
+  if (kpis) await renderKPIsFact(kpis);
 }
 
 // ============================================================
