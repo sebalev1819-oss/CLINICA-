@@ -3,6 +3,7 @@
 // ============================================================
 import { doLogin, doLogout, restoreSession } from './auth.js';
 import { cargarAgenda, suscribirRealtime, filterAgenda } from './agenda.js';
+import { instalarBridge } from './legacy-bridge.js';
 
 // Exponer al HTML (onclick inline en el HTML legacy)
 window.doLogin  = doLogin;
@@ -25,10 +26,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function iniciarERP() {
+  // 1. Bridge: hidrata window.AGENDA_DATA y window.CONSULTORIOS_DATA
+  //    (necesario ANTES del render para que el HTML vea datos reales)
+  await instalarBridge();
+
+  // 2. Realtime + agenda de hoy
   suscribirRealtime();
   await cargarAgenda('hoy');
+
+  // 3. Reloj
   actualizarClock();
   setInterval(actualizarClock, 1000);
+
   console.log('[ERP] ✅ Sistema iniciado');
 }
 

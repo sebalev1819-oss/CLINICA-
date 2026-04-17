@@ -2638,7 +2638,8 @@ Respondé con el número de tu opción 👇</textarea>
 // ═══════════════════════════════════════════════════════
 //  DATA
 // ═══════════════════════════════════════════════════════
-let CONSULTORIOS_DATA = [
+// Demo data — src/legacy-bridge.js la reemplaza con datos reales de Supabase al login
+window.CONSULTORIOS_DATA = window.CONSULTORIOS_DATA || [
   {id:1,esp:"Kinesiología",estado:"ocupado",prof:"Dra. Moreno",pac:"Rodrigo Sánchez"},
   {id:2,esp:"Fisioterapia",estado:"ocupado",prof:"Dr. Herrera",pac:"Ana Torres"},
   {id:3,esp:"Psicología",estado:"libre",prof:"Lic. Arcuri",pac:"—"},
@@ -2653,7 +2654,8 @@ let CONSULTORIOS_DATA = [
   {id:12,esp:"Traumatología",estado:"limpieza",prof:"—",pac:"—"},
 ];
 
-let AGENDA_DATA = [
+// Demo data — src/legacy-bridge.js la reemplaza con datos reales de Supabase al login
+window.AGENDA_DATA = window.AGENDA_DATA || [
   {fecha:"Hoy",rango:"hoy",hora:"08:00",pac:"Rodrigo Sánchez",prof:"Dra. Moreno",c:1,esp:"Kinesiología",tipo:"Presencial",estado:"Confirmado"},
   {fecha:"Hoy",rango:"hoy",hora:"08:30",pac:"Ana Torres",prof:"Dr. Herrera",c:2,esp:"Fisioterapia",tipo:"Presencial",estado:"Confirmado"},
   {fecha:"Hoy",rango:"hoy",hora:"09:00",pac:"Tomás Villanueva",prof:"Dra. Moreno",c:1,esp:"Kinesiología",tipo:"Presencial",estado:"Pendiente"},
