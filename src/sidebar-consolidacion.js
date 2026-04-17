@@ -10,9 +10,9 @@
 
 const GRUPOS = [
   {
-    id:         'contab-bi',
+    id:         'contabilidad',
     icon:       '📊',
-    label:      'Contabilidad & BI',
+    label:      'Contabilidad',
     section:    'ESTRATÉGICO',
     modulos: [
       { mod: 'contabilidad', label: 'Contabilidad' },
@@ -20,9 +20,9 @@ const GRUPOS = [
     ],
   },
   {
-    id:      'mkt-crm',
+    id:      'comercial',
     icon:    '📢',
-    label:   'Marketing & CRM',
+    label:   'Comercial',
     section: 'ESTRATÉGICO',
     modulos: [
       { mod: 'marketing', label: 'Marketing' },
