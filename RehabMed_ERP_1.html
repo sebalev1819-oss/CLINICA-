@@ -2227,10 +2227,18 @@ Respondé con el número de tu opción 👇</textarea>
       <button class="modal-close" onclick="closeModal('modalNuevoTurno')">×</button>
     </div>
 
-    <!-- PACIENTE + PROFESIONAL -->
+    <!-- PACIENTE + PROFESIONAL (con autocomplete: input + datalist) -->
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Paciente *</label><select class="form-select" id="turnoPac" onchange="autoFillCobertura()"><option value="">Seleccionar...</option><option>Rodrigo Sánchez</option><option>Marcela Fontana</option><option>Tomás Villanueva</option><option>Graciela Molina</option><option>Sebastián Castro</option><option>Ana Belén Torres</option><option>Jorge Navarro</option><option>Patricia Ruiz</option></select></div>
-      <div class="form-group"><label class="form-label">Profesional *</label><select class="form-select" id="turnoProf"><option value="">Seleccionar...</option><option>Dra. Valeria Moreno</option><option>Dr. Matías Herrera</option><option>Lic. Sofía Arcuri</option><option>Dr. Ignacio Ríos</option><option>Dra. Camila Pérez</option><option>Dr. Lucas Bravo</option></select></div>
+      <div class="form-group">
+        <label class="form-label">Paciente *</label>
+        <input class="form-input" id="turnoPac" list="pacientesList" placeholder="Escribí para buscar..." autocomplete="off" oninput="autoFillCobertura()">
+        <datalist id="pacientesList"></datalist>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Profesional *</label>
+        <input class="form-input" id="turnoProf" list="profesionalesList" placeholder="Escribí para buscar..." autocomplete="off">
+        <datalist id="profesionalesList"></datalist>
+      </div>
     </div>
 
     <!-- FECHA + HORA -->

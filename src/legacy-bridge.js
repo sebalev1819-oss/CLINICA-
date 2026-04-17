@@ -217,29 +217,23 @@ export async function hidratarProfesionales() {
 }
 
 // ============================================================
-//  POBLAR <select> DEL MODAL "Nuevo Turno"
-//  Reemplaza las <option> hardcodeadas con datos reales
+//  POBLAR <datalist> DEL MODAL "Nuevo Turno"
+//  Autocomplete nativo: el usuario tipea y filtra
 // ============================================================
 function popularSelectPacientes() {
-  const sel = document.getElementById('turnoPac');
-  if (!sel) return;
-  const actual = sel.value;
-  sel.innerHTML = '<option value="">Seleccionar...</option>' +
-    (window.PACIENTES_DATA || [])
-      .map(p => `<option value="${escAttr(p.nombre)}" data-id="${escAttr(p.id)}">${escHtml(p.nombre)}</option>`)
-      .join('');
-  if (actual) sel.value = actual;
+  const dl = document.getElementById('pacientesList');
+  if (!dl) return;
+  dl.innerHTML = (window.PACIENTES_DATA || [])
+    .map(p => `<option value="${escAttr(p.nombre)}">${escHtml(p.dni ? '· ' + p.dni : '')}</option>`)
+    .join('');
 }
 
 function popularSelectProfesionales() {
-  const sel = document.getElementById('turnoProf');
-  if (!sel) return;
-  const actual = sel.value;
-  sel.innerHTML = '<option value="">Seleccionar...</option>' +
-    (window.PROFESIONALES_DATA || [])
-      .map(p => `<option value="${escAttr(p.nombre)}" data-id="${escAttr(p.id)}" data-esp="${escAttr(p.esp)}" data-consultorio="${escAttr(p.c)}">${escHtml(p.nombre)} · ${escHtml(p.esp)}</option>`)
-      .join('');
-  if (actual) sel.value = actual;
+  const dl = document.getElementById('profesionalesList');
+  if (!dl) return;
+  dl.innerHTML = (window.PROFESIONALES_DATA || [])
+    .map(p => `<option value="${escAttr(p.nombre)}">${escHtml(p.esp)}</option>`)
+    .join('');
 }
 
 function escHtml(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -301,10 +295,8 @@ async function changeEstadoSupabase(idx, newEstado) {
 }
 
 async function guardarNuevoTurnoSupabase() {
-  const selPac  = document.getElementById('turnoPac');
-  const selProf = document.getElementById('turnoProf');
-  const pacNombre  = selPac?.value;
-  const profNombre = selProf?.value;
+  const pacNombre  = document.getElementById('turnoPac')?.value?.trim();
+  const profNombre = document.getElementById('turnoProf')?.value?.trim();
   const fecha      = document.getElementById('turnoFecha')?.value || new Date().toISOString().slice(0,10);
   const hora       = document.getElementById('turnoHora')?.value;
   const esp        = document.getElementById('turnoEsp')?.value || 'Kinesiología';
@@ -320,17 +312,16 @@ async function guardarNuevoTurnoSupabase() {
     showToast('🚫 Cobertura y Nº de autorización son obligatorios'); return;
   }
 
-  // IDs desde los <option data-id="...">
-  const pacOpt  = selPac.options[selPac.selectedIndex];
-  const profOpt = selProf.options[selProf.selectedIndex];
-  const pacId   = pacOpt?.getAttribute('data-id');
-  const profId  = profOpt?.getAttribute('data-id');
-  const consultorio_id = Number(profOpt?.getAttribute('data-consultorio')) || 1;
+  // Buscar IDs en los arrays hidratados (match por nombre exacto)
+  const pac  = (window.PACIENTES_DATA || []).find(p => p.nombre === pacNombre);
+  const prof = (window.PROFESIONALES_DATA || []).find(p => p.nombre === profNombre);
 
-  if (!pacId || !profId) {
-    showToast('⚠️ Seleccioná paciente y profesional de la lista');
-    return;
-  }
+  if (!pac)  { showToast(`⚠️ Paciente "${pacNombre}" no existe. Creá la ficha primero.`); return; }
+  if (!prof) { showToast(`⚠️ Profesional "${profNombre}" no existe.`); return; }
+
+  const pacId = pac.id;
+  const profId = prof.id;
+  const consultorio_id = Number(prof.c) || 1;
 
   const { data: { user } } = await supabase.auth.getUser();
   const { error } = await supabase.from('turnos').insert([{
