@@ -5,6 +5,7 @@
 import { supabase } from '../lib/supabase.js';
 import { escapeHtml, escapeAttr, showToast } from '../lib/dom.js';
 import { crearModal, cerrarModal } from './config.js';
+import { abrirConfigHorarios, abrirExcepciones } from './horarios.js';
 
 let _menuActivo = null;
 
@@ -639,6 +640,9 @@ function construirMenuProfesional(profId) {
     { icon: '📅',  label: 'Ver agenda',               action: () => verAgendaProfesional(profId) },
     { icon: '💼',  label: 'Generar liquidación',      action: () => generarLiquidacionProf(profId) },
     { icon: '💰',  label: 'Cuenta corriente',         action: () => verCtaCteProfesional(profId) },
+    { separator: true },
+    { icon: '🕐',  label: 'Configurar horarios',      action: () => abrirConfigHorarios(profId) },
+    { icon: '📆',  label: 'Excepciones / Ausencias',  action: () => abrirExcepciones(profId) },
     { separator: true },
     { icon: '⚠️',  label: 'Aplicar penalización',     action: () => abrirModalPenalizacion(profId) },
     { icon: '📊',  label: 'Ver resumen del mes',      action: async () => {
