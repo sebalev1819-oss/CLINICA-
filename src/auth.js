@@ -33,8 +33,11 @@ export async function doLogin(e) {
   errEl?.classList.remove('show');
 
   try {
+    console.log('[Auth] Intentando login con:', email);
     const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
-    if (error || !data.user) throw new Error('Credenciales incorrectas');
+    console.log('[Auth] Respuesta Supabase:', { data, error });
+    if (error) throw new Error(`Supabase: ${error.message} (${error.status || 'sin status'})`);
+    if (!data.user) throw new Error('No se devolvió usuario');
 
     const { data: profile, error: profileErr } = await supabase
       .from('profiles').select('*').eq('id', data.user.id).single();
