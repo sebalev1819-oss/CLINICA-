@@ -9,6 +9,7 @@ import { instalarReports } from './reports.js';
 import { instalarAdminUsuarios } from './admin-usuarios.js';
 import { instalarAdminPanel } from './admin/index.js';
 import { instalarConsolidacionSidebar } from './sidebar-consolidacion.js';
+import { instalarContextMenuPacientes } from './admin/context-menu.js';
 
 // Exponer al HTML (onclick inline en el HTML legacy)
 window.doLogin  = doLogin;
@@ -53,6 +54,9 @@ async function iniciarERP() {
   // 1f. Consolidación del sidebar: Contabilidad y Comercial (con tabs)
   //     Corre DESPUÉS de instalarAdminPanel para que sus items queden abajo.
   instalarConsolidacionSidebar();
+
+  // 1g. Menú contextual (click derecho) en rows de pacientes
+  instalarContextMenuPacientes();
 
   // 2. Realtime + agenda de hoy
   suscribirRealtime();

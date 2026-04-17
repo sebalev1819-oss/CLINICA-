@@ -3956,7 +3956,7 @@ function renderPacientes(data) {
     const scoreColor = p.score > 90 ? 'var(--emerald)' : p.score > 70 ? 'var(--amber)' : 'var(--rose)';
     const scorePct = p.score + '%';
     return `
-    <tr>
+    <tr data-pac-id="${p.id}" title="Click derecho para más opciones">
       <td><div style="display:flex;align-items:center;gap:10px">
         <div class="avatar avatar-sm">${p.nombre.split(' ').map(w=>w[0]).slice(0,2).join('')}</div>
         <div><span style="font-weight:700;color:var(--text)">${p.nombre}</span><div style="font-size:10px;color:var(--text4);font-family:var(--mono)">${p.ref}</div></div>
