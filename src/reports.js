@@ -64,20 +64,19 @@ export async function calcularKPIs() {
   const confirmadosHoy = (porEstado['Confirmado'] || 0) + (porEstado['En curso'] || 0);
   const noShowRate = totalHoy > 0 ? ((noShowsHoy / totalHoy) * 100).toFixed(1) : '0';
 
-  // Tarifa por defecto por especialidad (aproximado, hasta que haya tabla tarifas)
-  const TARIFA_DEFAULT = 8000;
-  const TARIFAS_ESP = {
-    'Kinesiología':  7500,
-    'Fisioterapia':  8000,
-    'Psicología':    12000,
-    'Traumatología': 15000,
-    'Neurología':    14000,
-    'Pediatría':     9000,
-    'Deportología':  11000,
-  };
+  // Tarifas desde Supabase (v_tarifas_vigentes) - fallback hardcoded si aún no migraste
+  const { data: tarifas } = await supabase.from('v_tarifas_vigentes').select('especialidad, monto, obra_social_id');
+  const TARIFA_DEFAULT = 10000;
+  const mapaTarifas = {};
+  (tarifas || []).forEach(t => {
+    // Preferir tarifa particular (obra_social_id null)
+    if (!mapaTarifas[t.especialidad] || !t.obra_social_id) {
+      mapaTarifas[t.especialidad] = Number(t.monto);
+    }
+  });
 
   const facturacionMes = (sesionesMes.data || []).reduce((sum, t) => {
-    return sum + (TARIFAS_ESP[t.especialidad] || TARIFA_DEFAULT);
+    return sum + (mapaTarifas[t.especialidad] || TARIFA_DEFAULT);
   }, 0);
 
   return {

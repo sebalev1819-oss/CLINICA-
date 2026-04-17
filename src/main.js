@@ -7,6 +7,7 @@ import { instalarBridge } from './legacy-bridge.js';
 import { instalarHC } from './historia-clinica.js';
 import { instalarReports } from './reports.js';
 import { instalarAdminUsuarios } from './admin-usuarios.js';
+import { instalarAdminPanel } from './admin/index.js';
 
 // Exponer al HTML (onclick inline en el HTML legacy)
 window.doLogin  = doLogin;
@@ -44,6 +45,9 @@ async function iniciarERP() {
 
   // 1d. Admin usuarios: agrega botón en sidebar (solo visible si admin)
   instalarAdminUsuarios();
+
+  // 1e. Módulos administrativos: config, facturación, caja, liquidaciones, stock
+  await instalarAdminPanel();
 
   // 2. Realtime + agenda de hoy
   suscribirRealtime();

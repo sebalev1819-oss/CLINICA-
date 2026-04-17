@@ -292,6 +292,20 @@ async function changeEstadoSupabase(idx, newEstado) {
 
   if (error) { console.error('[Bridge]', error); showToast('❌ No se pudo actualizar'); return; }
   showToast(`✅ ${t.pac}: ${t.estado} → ${newEstado}`);
+
+  // Al finalizar un turno, ofrecer facturarlo
+  if (newEstado === 'Finalizado') {
+    setTimeout(async () => {
+      if (confirm(`✅ Turno finalizado. ¿Emitir factura/recibo automáticamente para ${t.pac}?`)) {
+        const { data, error: errFact } = await supabase.rpc('facturar_turno', { p_turno_id: t.id });
+        if (errFact) {
+          showToast(`❌ No se pudo facturar: ${errFact.message}`);
+        } else {
+          showToast(`✅ Factura #${String(data.numero).padStart(6,'0')} emitida por $${Number(data.total).toLocaleString('es-AR')}`);
+        }
+      }
+    }, 400);
+  }
 }
 
 async function guardarNuevoTurnoSupabase() {

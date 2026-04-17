@@ -38,6 +38,8 @@ Ejecutar en **SQL Editor** de Supabase en este orden:
 2. `supabase/migrations/002_rls_policies.sql` — Row Level Security
 3. `supabase/migrations/003_security_fixes.sql` — **obligatorio**: arregla RLS en vistas, SECURITY DEFINER con `search_path`, policies UPDATE con `WITH CHECK`, audit log
 4. `supabase/migrations/004_pacientes_ampliar.sql` — columnas ampliadas de paciente (cobertura detallada, contacto de emergencia, antecedentes médicos, consentimiento informado)
+5. `supabase/migrations/005_profiles_email_y_admin.sql` — columna email en profiles + función `admin_actualizar_usuario` (panel admin usuarios)
+6. `supabase/migrations/006_erp_administracion.sql` — schema administrativo/contable: obras sociales, tarifas, facturas, pagos, caja, liquidaciones (+ RPCs `facturar_turno`, `generar_liquidacion`, `abrir_caja`, `cerrar_caja`, `saldo_cta_cte_paciente`)
 
 > Alternativa: `SUPABASE_SETUP.sql` (en raíz) ejecuta las primeras 3 migraciones en una sola corrida.
 > `000_drop_all.sql` solo si necesitás resetear desde cero — borra todos los datos.
