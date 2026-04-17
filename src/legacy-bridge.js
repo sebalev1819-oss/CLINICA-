@@ -399,6 +399,7 @@ async function crearPacienteUI(datos) {
  */
 async function guardarNuevoPacienteSupabase() {
   const v = id => document.getElementById(id)?.value?.trim() || '';
+  const vOrNull = id => v(id) || null;
 
   const nombre   = v('pacNombre');
   const apellido = v('pacApellido');
@@ -408,72 +409,90 @@ async function guardarNuevoPacienteSupabase() {
   const dni      = v('pacDNI');
   if (!dni) { showToast('⚠️ DNI es obligatorio'); return; }
 
-  // Datos adicionales → notas estructuradas (hasta que ampliemos el schema)
-  const extras = {
-    genero:          v('pacGenero'),
-    estado_civil:    v('pacEstCivil'),
-    telefono2:       v('pacTel2'),
-    direccion:       v('pacDir'),
-    ocupacion:       v('pacOcupacion'),
-    nacionalidad:    v('pacNacionalidad'),
-    plan:            v('pacPlan'),
-    vigencia_cob:    v('pacVigencia'),
-    diag_secundario: v('pacDiag2'),
-    especialidad:    v('pacEsp'),
-    medico_derivante: v('pacMedDer'),
-    mat_derivante:   v('pacMedMat'),
-    sesiones_auth:   v('pacSesiones'),
-    grupo_sanguineo: v('pacSangre'),
-    peso_altura:     v('pacPesoAltura'),
-    alergias:        v('pacAlergias'),
-    medicacion:      v('pacMedicacion'),
-    cirugias:        v('pacCirugias'),
-    cronicas:        v('pacCronicas'),
-    implante:        v('pacImplante'),
-    embarazo:        v('pacEmbarazo'),
-    emergencia: {
-      nombre:   v('pacEmergNombre'),
-      relacion: v('pacEmergRel'),
-      telefono: v('pacEmergTel'),
-      tel2:     v('pacEmergTel2'),
-      direccion: v('pacEmergDir'),
-    },
-    motivo_consulta: v('pacMotivo'),
-    observaciones:   v('pacObs'),
-    consentimiento:  document.getElementById('pacConsentimiento')?.checked === true,
-  };
-  // Eliminar strings vacíos para que notas quede más limpio
-  const notasObj = Object.fromEntries(
-    Object.entries(extras).filter(([, v2]) =>
-      v2 !== '' && !(typeof v2 === 'object' && Object.values(v2).every(x => x === '' || x === false))
-    )
-  );
+  // Parsear peso/altura "75 / 170"
+  const pesoAltura = v('pacPesoAltura');
+  let peso = null, altura = null;
+  if (pesoAltura) {
+    const match = pesoAltura.match(/(\d+(?:[.,]\d+)?)\s*[\/\-,]\s*(\d+(?:[.,]\d+)?)/);
+    if (match) {
+      peso   = parseFloat(match[1].replace(',', '.'));
+      altura = parseFloat(match[2].replace(',', '.'));
+    }
+  }
 
-  const data = await crearPacienteUI({
-    nombre:          fullName,
+  const consentimientoChecked = document.getElementById('pacConsentimiento')?.checked === true;
+  const sesAuth = parseInt(v('pacSesiones'), 10);
+
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data, error } = await supabase.from('pacientes').insert([{
+    nombre:           fullName,
     dni,
-    telefono:        v('pacTel'),
-    email:           v('pacEmail'),
-    fechaNacimiento: v('pacFechaNac') || null,
-    cobertura:       v('pacCob') || 'Particular',
-    numeroAfiliado:  v('pacAfiliado'),
-    diagnostico:     v('pacDiag') || v('pacMotivo') || null,
-    notas:           Object.keys(notasObj).length ? JSON.stringify(notasObj) : null,
-  });
+    telefono:         vOrNull('pacTel'),
+    email:            vOrNull('pacEmail'),
+    fecha_nacimiento: vOrNull('pacFechaNac'),
+    cobertura:        v('pacCob') || 'Particular',
+    numero_afiliado:  vOrNull('pacAfiliado'),
+    diagnostico:      vOrNull('pacDiag'),
+    estado:           'Nuevo',
 
-  if (!data) return;
+    // Datos personales ampliados (schema 004)
+    genero:               vOrNull('pacGenero'),
+    estado_civil:         vOrNull('pacEstCivil'),
+    telefono_secundario:  vOrNull('pacTel2'),
+    direccion:            vOrNull('pacDir'),
+    ocupacion:            vOrNull('pacOcupacion'),
+    nacionalidad:         v('pacNacionalidad') || 'Argentina',
+
+    plan_cobertura:       vOrNull('pacPlan'),
+    vigencia_cobertura:   vOrNull('pacVigencia'),
+
+    diagnostico_secundario: vOrNull('pacDiag2'),
+    especialidad_derivada:  vOrNull('pacEsp'),
+    medico_derivante:       vOrNull('pacMedDer'),
+    matricula_derivante:    vOrNull('pacMedMat'),
+    sesiones_autorizadas:   Number.isFinite(sesAuth) ? sesAuth : null,
+    grupo_sanguineo:        vOrNull('pacSangre'),
+    peso_kg:                peso,
+    altura_cm:              altura,
+
+    alergias:    vOrNull('pacAlergias'),
+    medicacion:  vOrNull('pacMedicacion'),
+    cirugias:    vOrNull('pacCirugias'),
+    cronicas:    vOrNull('pacCronicas'),
+    implante:    vOrNull('pacImplante'),
+    embarazo:    vOrNull('pacEmbarazo'),
+
+    emerg_nombre:   vOrNull('pacEmergNombre'),
+    emerg_relacion: vOrNull('pacEmergRel'),
+    emerg_telefono: vOrNull('pacEmergTel'),
+    emerg_tel2:     vOrNull('pacEmergTel2'),
+    emerg_direccion: vOrNull('pacEmergDir'),
+
+    motivo_consulta:        vOrNull('pacMotivo'),
+    observaciones:          vOrNull('pacObs'),
+    consentimiento_firmado: consentimientoChecked,
+    consentimiento_fecha:   consentimientoChecked ? new Date().toISOString() : null,
+  }]).select().single();
+
+  if (error) {
+    showToast(`❌ ${error.message}`);
+    console.error('[Bridge] guardarNuevoPaciente:', error);
+    return;
+  }
+
+  showToast(`✅ ${data.nombre} creado (${data.ref})`);
 
   if (typeof window.closeModal === 'function') window.closeModal('modalNuevoPaciente');
 
-  // Limpiar form (los inputs principales)
+  // Limpiar form
   ['pacNombre','pacApellido','pacDNI','pacTel','pacTel2','pacEmail','pacDir',
-   'pacOcupacion','pacAfiliado','pacPlan','pacDiag','pacDiag2','pacMedDer','pacMedMat',
-   'pacSesiones','pacPesoAltura','pacAlergias','pacMedicacion','pacCirugias','pacCronicas',
-   'pacAuth','pacEmergNombre','pacEmergTel','pacEmergTel2','pacEmergDir','pacObs','pacMotivo',
+   'pacOcupacion','pacAfiliado','pacPlan','pacVigencia','pacDiag','pacDiag2',
+   'pacMedDer','pacMedMat','pacSesiones','pacPesoAltura','pacAlergias',
+   'pacMedicacion','pacCirugias','pacCronicas','pacAuth','pacAuthFecha',
+   'pacAuthVenc','pacEmergNombre','pacEmergTel','pacEmergTel2','pacEmergDir',
+   'pacObs','pacMotivo','pacFechaNac',
   ].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   const chk = document.getElementById('pacConsentimiento'); if (chk) chk.checked = false;
-
-  // Realtime refresca PACIENTES_DATA y re-popula el <select> de turnos
 }
 
 async function crearProfesionalUI(datos) {
