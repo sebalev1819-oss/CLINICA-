@@ -1222,7 +1222,7 @@ tbody tr:last-child td{border-bottom:none;}
     <div class="module" id="mod-profesionales">
       <div class="page-header-row">
         <div><div class="page-title">Gestión de Profesionales</div><div class="page-sub">6 profesionales activos · Liquidación automática</div></div>
-        <button class="btn btn-violet">
+        <button class="btn btn-violet" onclick="openModal('modalNuevoProf')">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Agregar Profesional
         </button>
@@ -2340,6 +2340,51 @@ Respondé con el número de tu opción 👇</textarea>
 </div>
 
 <!-- ═══ MODAL: NUEVO PACIENTE ═══ -->
+<!-- ═══ MODAL: NUEVO PROFESIONAL ═══ -->
+<div class="modal-overlay" id="modalNuevoProf">
+  <div class="modal" style="width:520px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div class="modal-title">👨‍⚕️ Nuevo Profesional</div>
+      <button class="modal-close" onclick="closeModal('modalNuevoProf')">×</button>
+    </div>
+    <div class="form-group"><label class="form-label">Nombre completo *</label><input class="form-input" id="profNombre" placeholder="Dra. Valeria Moreno"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Iniciales</label><input class="form-input" id="profIniciales" placeholder="auto (ej: VM)" maxlength="3"></div>
+      <div class="form-group"><label class="form-label">Matrícula *</label><input class="form-input" id="profMatricula" placeholder="MK-4821"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Especialidad *</label>
+        <select class="form-select" id="profEspecialidad">
+          <option>Kinesiología</option><option>Fisioterapia</option><option>Psicología</option>
+          <option>Traumatología</option><option>Neurología</option><option>Reumatología</option>
+          <option>Pediatría</option><option>Deportología</option><option>Fonoaudiología</option>
+          <option>Terapia Ocupacional</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Tipo</label>
+        <select class="form-select" id="profTipo">
+          <option>Full Time</option><option>Part Time</option><option>Freelance</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Consultorio asignado</label>
+      <select class="form-select" id="profConsultorio">
+        <option value="">Sin asignar</option>
+        <option value="1">C1 - Kinesiología</option><option value="2">C2 - Fisioterapia</option>
+        <option value="3">C3 - Psicología</option><option value="4">C4 - Traumatología</option>
+        <option value="5">C5 - Neurología</option><option value="6">C6 - Reumatología</option>
+        <option value="7">C7 - Pediatría</option><option value="8">C8 - Deportología</option>
+        <option value="9">C9 - Kinesiología</option><option value="10">C10 - Fisioterapia</option>
+        <option value="11">C11 - Psicología</option><option value="12">C12 - Traumatología</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px">
+      <button class="btn btn-ghost" onclick="closeModal('modalNuevoProf')">Cancelar</button>
+      <button class="btn btn-violet" onclick="guardarNuevoProfesional()">Guardar Profesional</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modalNuevoPaciente">
   <div class="modal" style="width:680px;max-height:90vh;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;position:sticky;top:-28px;background:var(--bg3);padding:12px 0;z-index:1">

@@ -515,6 +515,34 @@ async function crearProfesionalUI(datos) {
   return data;
 }
 
+/**
+ * guardarNuevoProfesional() — handler del modal #modalNuevoProf
+ */
+async function guardarNuevoProfesionalSupabase() {
+  const v = id => document.getElementById(id)?.value?.trim() || '';
+
+  const nombre       = v('profNombre');
+  const matricula    = v('profMatricula');
+  const especialidad = v('profEspecialidad');
+  const iniciales    = v('profIniciales');
+  const tipo         = v('profTipo');
+  const consultorioId = v('profConsultorio');
+
+  const data = await crearProfesionalUI({
+    nombre, matricula, especialidad, iniciales, tipo,
+    consultorioId: consultorioId ? Number(consultorioId) : null,
+  });
+
+  if (!data) return;
+
+  if (typeof window.closeModal === 'function') window.closeModal('modalNuevoProf');
+
+  // Limpiar form
+  ['profNombre','profMatricula','profIniciales'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+}
+
 // ============================================================
 //  INSTALAR BRIDGE
 // ============================================================
@@ -529,12 +557,13 @@ export async function instalarBridge() {
 
   suscribirBridgeRealtime();
 
-  window.updateTurnoEstado    = updateTurnoEstadoSupabase;
-  window.changeEstado         = changeEstadoSupabase;
-  window.guardarNuevoTurno    = guardarNuevoTurnoSupabase;
-  window.guardarNuevoPaciente = guardarNuevoPacienteSupabase;
-  window.crearPacienteUI      = crearPacienteUI;
-  window.crearProfesionalUI   = crearProfesionalUI;
+  window.updateTurnoEstado        = updateTurnoEstadoSupabase;
+  window.changeEstado             = changeEstadoSupabase;
+  window.guardarNuevoTurno        = guardarNuevoTurnoSupabase;
+  window.guardarNuevoPaciente     = guardarNuevoPacienteSupabase;
+  window.guardarNuevoProfesional  = guardarNuevoProfesionalSupabase;
+  window.crearPacienteUI          = crearPacienteUI;
+  window.crearProfesionalUI       = crearProfesionalUI;
 
   window.BridgeMod = {
     hidratarAgenda,
