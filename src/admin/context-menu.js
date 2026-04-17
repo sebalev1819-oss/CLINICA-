@@ -336,8 +336,335 @@ function construirMenuPaciente(pacId) {
   ];
 }
 
+// ============================================================
+//  ACCIONES sobre profesional
+// ============================================================
+
+async function verAgendaProfesional(profId) {
+  const prof = (window.PROFESIONALES_DATA || []).find(p => String(p.id) === String(profId));
+  if (!prof) return;
+
+  // Cargar turnos de este profesional
+  const { data } = await supabase
+    .from('v_turnos_dia')
+    .select('*')
+    .eq('profesional_id', profId)
+    .gte('fecha', new Date().toISOString().slice(0, 10))
+    .order('fecha').order('hora');
+
+  const turnos = data || [];
+
+  const modal = crearModal('modalAgendaProf', `
+    <div class="modal-title">📅 Agenda — ${escapeHtml(prof.nombre)}</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:14px">${escapeHtml(prof.esp)} · Consultorio C${prof.c} · Próximos ${turnos.length} turnos</div>
+
+    ${turnos.length === 0
+      ? `<div style="text-align:center;padding:40px;color:var(--text4)">
+          <div style="font-size:40px;margin-bottom:8px">📭</div>
+          Sin turnos próximos agendados
+         </div>`
+      : `<div class="table-wrap" style="max-height:420px;overflow-y:auto">
+          <table><thead><tr><th>Fecha</th><th>Hora</th><th>Paciente</th><th>Cobertura</th><th>Estado</th></tr></thead>
+          <tbody>${turnos.map(t => `
+            <tr>
+              <td>${escapeHtml(t.fecha)}</td>
+              <td style="font-family:var(--mono);font-weight:700;color:var(--sky)">${String(t.hora).slice(0,5)}</td>
+              <td style="font-weight:700">${escapeHtml(t.pac_nombre || '—')}</td>
+              <td style="font-size:11px;color:var(--text3)">${escapeHtml(t.cobertura || t.pac_cobertura || 'Particular')}</td>
+              <td><span class="badge badge-${
+                t.estado === 'Finalizado' ? 'emerald' :
+                t.estado === 'Confirmado' ? 'sky' :
+                t.estado === 'No Show' ? 'rose' :
+                t.estado === 'Cancelado' ? 'slate' : 'amber'
+              }">${escapeHtml(t.estado)}</span></td>
+            </tr>`).join('')}</tbody></table>
+         </div>`}
+
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px">
+      <button class="btn btn-ghost" data-cerrar>Cerrar</button>
+    </div>
+  `);
+  modal.querySelector('.modal').style.width = '780px';
+}
+
+async function generarLiquidacionProf(profId) {
+  const prof = (window.PROFESIONALES_DATA || []).find(p => String(p.id) === String(profId));
+  if (!prof) return;
+
+  const hoy = new Date();
+  const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString().slice(0, 10);
+  const hoyStr = hoy.toISOString().slice(0, 10);
+
+  // Resumen antes de generar
+  const { data: resumen } = await supabase.rpc('resumen_profesional', {
+    p_profesional_id: profId,
+    p_desde: primerDia,
+    p_hasta: hoyStr,
+  });
+  const r = (resumen && resumen[0]) || { total_turnos: 0, finalizados: 0, no_show: 0, cancelados: 0, pacientes_unicos: 0, monto_estimado: 0 };
+
+  const modal = crearModal('modalLiqProf', `
+    <div class="modal-title">💼 Liquidar — ${escapeHtml(prof.nombre)}</div>
+
+    <div class="grid-4" style="margin-bottom:14px;gap:8px">
+      <div class="stat-card" data-color="sky" style="padding:10px">
+        <div class="stat-label" style="font-size:9px">FINALIZADOS</div>
+        <div class="stat-value" style="font-size:20px">${r.finalizados}</div>
+      </div>
+      <div class="stat-card" data-color="rose" style="padding:10px">
+        <div class="stat-label" style="font-size:9px">NO-SHOW</div>
+        <div class="stat-value" style="font-size:20px">${r.no_show}</div>
+      </div>
+      <div class="stat-card" data-color="amber" style="padding:10px">
+        <div class="stat-label" style="font-size:9px">CANCELADOS</div>
+        <div class="stat-value" style="font-size:20px">${r.cancelados}</div>
+      </div>
+      <div class="stat-card" data-color="emerald" style="padding:10px">
+        <div class="stat-label" style="font-size:9px">BRUTO EST.</div>
+        <div class="stat-value" style="font-size:16px">$${(Number(r.monto_estimado)/1000).toFixed(1)}K</div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Desde *</label><input class="form-input" id="liqPDesde" type="date" value="${primerDia}"></div>
+      <div class="form-group"><label class="form-label">Hasta *</label><input class="form-input" id="liqPHasta" type="date" value="${hoyStr}"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Comisión del profesional (%) *</label>
+      <input class="form-input" id="liqPComision" type="number" step="0.01" min="0" max="100" value="60">
+      <div style="font-size:11px;color:var(--text4);margin-top:4px">% del valor bruto que le corresponde al profesional.</div>
+    </div>
+    <div class="form-group" style="display:flex;align-items:center;gap:8px">
+      <input type="checkbox" id="liqPAplicarPenal" checked style="width:16px;height:16px;accent-color:var(--rose)">
+      <label for="liqPAplicarPenal" style="font-size:13px">Aplicar penalizaciones pendientes del período (se descuentan del neto)</label>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px">
+      <button class="btn btn-ghost" data-cerrar>Cancelar</button>
+      <button class="btn btn-sky" id="btnLiqPGenerar">Generar liquidación</button>
+    </div>
+  `);
+  modal.querySelector('.modal').style.width = '620px';
+
+  modal.querySelector('#btnLiqPGenerar').onclick = async () => {
+    const desde = modal.querySelector('#liqPDesde').value;
+    const hasta = modal.querySelector('#liqPHasta').value;
+    const comision = parseFloat(modal.querySelector('#liqPComision').value) || 60;
+    const aplicarPenal = modal.querySelector('#liqPAplicarPenal').checked;
+
+    const { data, error } = await supabase.rpc('generar_liquidacion', {
+      p_profesional_id: profId,
+      p_desde: desde,
+      p_hasta: hasta,
+      p_comision_pct: comision,
+    });
+
+    if (error) { showToast(`❌ ${error.message}`); return; }
+
+    // Aplicar penalizaciones si corresponde
+    if (aplicarPenal && data) {
+      const { data: penals } = await supabase
+        .from('penalizaciones')
+        .select('id, monto')
+        .eq('profesional_id', profId)
+        .eq('aplicada', false)
+        .gte('fecha', desde)
+        .lte('fecha', hasta);
+
+      if (penals && penals.length > 0) {
+        const totalPenal = penals.reduce((s, p) => s + Number(p.monto), 0);
+        await supabase.from('liquidaciones').update({
+          total_descuentos: totalPenal,
+          total_neto: Number(data.total_neto) - totalPenal,
+        }).eq('id', data.id);
+        // Marcar penalizaciones como aplicadas
+        await supabase.from('penalizaciones')
+          .update({ aplicada: true, liquidacion_id: data.id })
+          .in('id', penals.map(p => p.id));
+      }
+    }
+
+    showToast(`✅ Liquidación generada — ${data.total_sesiones} sesiones · $${Number(data.total_neto).toLocaleString('es-AR')}`);
+    cerrarModal('modalLiqProf');
+
+    if (typeof window.showModule === 'function') window.showModule('liquidaciones', null);
+  };
+}
+
+async function verCtaCteProfesional(profId) {
+  const prof = (window.PROFESIONALES_DATA || []).find(p => String(p.id) === String(profId));
+  if (!prof) return;
+
+  const [liqR, penalR] = await Promise.all([
+    supabase.from('liquidaciones')
+      .select('*')
+      .eq('profesional_id', profId)
+      .order('periodo_hasta', { ascending: false })
+      .limit(24),
+    supabase.from('penalizaciones')
+      .select('*')
+      .eq('profesional_id', profId)
+      .order('fecha', { ascending: false })
+      .limit(50),
+  ]);
+
+  const liqs = liqR.data || [];
+  const penals = penalR.data || [];
+
+  const totalPagado = liqs.filter(l => l.estado === 'Pagada').reduce((s, l) => s + Number(l.total_neto), 0);
+  const totalPendiente = liqs.filter(l => l.estado !== 'Pagada' && l.estado !== 'Anulada').reduce((s, l) => s + Number(l.total_neto), 0);
+  const penalPendientes = penals.filter(p => !p.aplicada).reduce((s, p) => s + Number(p.monto), 0);
+
+  const modal = crearModal('modalCtaCteProf', `
+    <div class="modal-title">💰 Cuenta corriente — ${escapeHtml(prof.nombre)}</div>
+
+    <div class="grid-3" style="margin-bottom:14px;gap:8px">
+      <div class="stat-card" data-color="emerald" style="padding:12px">
+        <div class="stat-label" style="font-size:9px">PAGADO HISTÓRICO</div>
+        <div class="stat-value" style="font-size:18px">$${(totalPagado/1000).toFixed(1)}K</div>
+      </div>
+      <div class="stat-card" data-color="amber" style="padding:12px">
+        <div class="stat-label" style="font-size:9px">PENDIENTE PAGO</div>
+        <div class="stat-value" style="font-size:18px">$${(totalPendiente/1000).toFixed(1)}K</div>
+      </div>
+      <div class="stat-card" data-color="rose" style="padding:12px">
+        <div class="stat-label" style="font-size:9px">PENAL. PENDIENTES</div>
+        <div class="stat-value" style="font-size:18px">$${(penalPendientes/1000).toFixed(1)}K</div>
+      </div>
+    </div>
+
+    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;margin:14px 0 6px">Liquidaciones</div>
+    <div class="table-wrap" style="max-height:180px;overflow-y:auto">
+      <table><thead><tr><th>Período</th><th>Sesiones</th><th>Bruto</th><th>Desc.</th><th>Neto</th><th>Estado</th></tr></thead>
+      <tbody>${liqs.length === 0
+        ? `<tr><td colspan="6" style="text-align:center;padding:16px;color:var(--text4)">Sin liquidaciones aún</td></tr>`
+        : liqs.map(l => `
+        <tr>
+          <td style="font-size:11px">${escapeHtml(l.periodo_desde)} → ${escapeHtml(l.periodo_hasta)}</td>
+          <td style="text-align:center">${l.total_sesiones}</td>
+          <td style="font-family:var(--mono);font-size:11px">$${Number(l.total_bruto).toLocaleString('es-AR')}</td>
+          <td style="font-family:var(--mono);font-size:11px;color:var(--rose)">-$${Number(l.total_descuentos).toLocaleString('es-AR')}</td>
+          <td style="font-family:var(--mono);font-weight:700">$${Number(l.total_neto).toLocaleString('es-AR')}</td>
+          <td><span class="badge badge-${l.estado === 'Pagada' ? 'emerald' : l.estado === 'Cerrada' ? 'sky' : 'amber'}">${escapeHtml(l.estado)}</span></td>
+        </tr>`).join('')}</tbody></table>
+    </div>
+
+    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;margin:14px 0 6px">Penalizaciones</div>
+    <div class="table-wrap" style="max-height:180px;overflow-y:auto">
+      <table><thead><tr><th>Fecha</th><th>Motivo</th><th>Tipo</th><th>Monto</th><th>Estado</th></tr></thead>
+      <tbody>${penals.length === 0
+        ? `<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--text4)">Sin penalizaciones</td></tr>`
+        : penals.map(p => `
+        <tr>
+          <td style="font-size:11px">${escapeHtml(p.fecha)}</td>
+          <td style="font-size:12px">${escapeHtml(p.motivo || '—')}</td>
+          <td><span class="badge badge-slate" style="font-size:10px">${escapeHtml(p.tipo)}</span></td>
+          <td style="font-family:var(--mono);font-weight:700;color:var(--rose)">-$${Number(p.monto).toLocaleString('es-AR')}</td>
+          <td><span class="badge badge-${p.aplicada ? 'slate' : 'amber'}">${p.aplicada ? 'Aplicada' : 'Pendiente'}</span></td>
+        </tr>`).join('')}</tbody></table>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px">
+      <button class="btn btn-ghost" data-cerrar>Cerrar</button>
+      <button class="btn btn-rose" id="btnNuevaPenal">+ Nueva penalización</button>
+    </div>
+  `);
+  modal.querySelector('.modal').style.width = '780px';
+
+  modal.querySelector('#btnNuevaPenal').onclick = () => {
+    cerrarModal('modalCtaCteProf');
+    abrirModalPenalizacion(profId);
+  };
+}
+
+async function abrirModalPenalizacion(profId) {
+  const prof = (window.PROFESIONALES_DATA || []).find(p => String(p.id) === String(profId));
+
+  const modal = crearModal('modalPenal', `
+    <div class="modal-title">⚠️ Nueva penalización — ${escapeHtml(prof?.nombre || '')}</div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Fecha *</label>
+        <input class="form-input" id="penalFecha" type="date" value="${new Date().toISOString().slice(0,10)}">
+      </div>
+      <div class="form-group"><label class="form-label">Tipo *</label>
+        <select class="form-select" id="penalTipo">
+          <option>Cancelación tardía</option>
+          <option>No-show profesional</option>
+          <option>Llegada tarde</option>
+          <option>Ausencia injustificada</option>
+          <option>Reclamo paciente</option>
+          <option>Otro</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Monto descuento *</label>
+      <input class="form-input" id="penalMonto" type="number" step="0.01" min="0" placeholder="0">
+      <div style="font-size:11px;color:var(--text4);margin-top:4px">Se descuenta automáticamente en la próxima liquidación del período.</div>
+    </div>
+    <div class="form-group"><label class="form-label">Motivo / Detalle</label>
+      <textarea class="form-input" id="penalMotivo" rows="3" placeholder="Describir la situación..."></textarea>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px">
+      <button class="btn btn-ghost" data-cerrar>Cancelar</button>
+      <button class="btn btn-rose" id="btnGuardarPenal">Aplicar penalización</button>
+    </div>
+  `);
+
+  modal.querySelector('#btnGuardarPenal').onclick = async () => {
+    const monto = parseFloat(modal.querySelector('#penalMonto').value);
+    if (!monto || monto <= 0) { showToast('⚠️ Monto inválido'); return; }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    const { error } = await supabase.from('penalizaciones').insert([{
+      profesional_id: profId,
+      fecha: modal.querySelector('#penalFecha').value,
+      tipo: modal.querySelector('#penalTipo').value,
+      motivo: modal.querySelector('#penalMotivo').value.trim() || null,
+      monto,
+      aplicada: false,
+      created_by: user?.id,
+    }]);
+
+    if (error) { showToast(`❌ ${error.message}`); return; }
+    showToast('⚠️ Penalización registrada');
+    cerrarModal('modalPenal');
+  };
+}
+
+// ============================================================
+//  CONSTRUIR MENÚ PROFESIONAL
+// ============================================================
+function construirMenuProfesional(profId) {
+  const prof = (window.PROFESIONALES_DATA || []).find(p => String(p.id) === String(profId));
+  return [
+    { icon: '📅',  label: 'Ver agenda',               action: () => verAgendaProfesional(profId) },
+    { icon: '💼',  label: 'Generar liquidación',      action: () => generarLiquidacionProf(profId) },
+    { icon: '💰',  label: 'Cuenta corriente',         action: () => verCtaCteProfesional(profId) },
+    { separator: true },
+    { icon: '⚠️',  label: 'Aplicar penalización',     action: () => abrirModalPenalizacion(profId) },
+    { icon: '📊',  label: 'Ver resumen del mes',      action: async () => {
+        const hoy = new Date();
+        const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString().slice(0, 10);
+        const hoyStr = hoy.toISOString().slice(0, 10);
+        const { data } = await supabase.rpc('resumen_profesional', {
+          p_profesional_id: profId, p_desde: primerDia, p_hasta: hoyStr
+        });
+        const r = (data && data[0]) || {};
+        showToast(`📊 ${prof?.nombre}: ${r.finalizados || 0} finalizados · ${r.no_show || 0} no-shows · $${Math.round((r.monto_estimado || 0)/1000)}K estimado`);
+      }
+    },
+    { separator: true },
+    { icon: '💬',  label: 'Enviar WhatsApp',
+                   action: () => {
+                     const tel = prof?.tel || prof?.telefono || '';
+                     if (!tel) { showToast('⚠️ Profesional sin teléfono'); return; }
+                     window.open(`https://wa.me/${String(tel).replace(/\D/g,'')}`, '_blank');
+                   },
+                   disabled: !(prof?.tel || prof?.telefono)
+    },
+  ];
+}
+
 export function instalarContextMenuPacientes() {
-  // Helper: encontrar el row de paciente en el módulo pacientes
   function findPacienteId(target) {
     const tr = target.closest('[data-pac-id], tr[data-id]');
     if (!tr) return null;
@@ -347,24 +674,53 @@ export function instalarContextMenuPacientes() {
     return pacId;
   }
 
+  function findProfesionalId(target) {
+    const card = target.closest('[data-prof-id]');
+    if (!card) return null;
+    return card.getAttribute('data-prof-id');
+  }
+
+  // Handler botones "Ver Agenda" y "Liquidar" de las cards profesional
+  document.addEventListener('click', (ev) => {
+    const btn = ev.target.closest('[data-prof-action]');
+    if (!btn) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    const action = btn.getAttribute('data-prof-action');
+    const profId = btn.getAttribute('data-prof-id-action');
+    if (action === 'ver-agenda') verAgendaProfesional(profId);
+    else if (action === 'liquidar') generarLiquidacionProf(profId);
+  });
+
   // Click derecho
   document.addEventListener('contextmenu', (ev) => {
     const pacId = findPacienteId(ev.target);
-    if (!pacId) return;
-    // No interceptar si el click es sobre un botón o link dentro del row
-    if (ev.target.closest('button, a, input, select')) return;
-    ev.preventDefault();
-    abrirMenu(ev.clientX, ev.clientY, construirMenuPaciente(pacId));
+    if (pacId && !ev.target.closest('button, a, input, select')) {
+      ev.preventDefault();
+      abrirMenu(ev.clientX, ev.clientY, construirMenuPaciente(pacId));
+      return;
+    }
+    const profId = findProfesionalId(ev.target);
+    if (profId && !ev.target.closest('button, a, input, select')) {
+      ev.preventDefault();
+      abrirMenu(ev.clientX, ev.clientY, construirMenuProfesional(profId));
+    }
   });
 
-  // Doble click — alternativa más natural en web
+  // Doble click
   document.addEventListener('dblclick', (ev) => {
     const pacId = findPacienteId(ev.target);
-    if (!pacId) return;
-    if (ev.target.closest('button, a, input, select')) return;
-    ev.preventDefault();
-    abrirMenu(ev.clientX, ev.clientY, construirMenuPaciente(pacId));
+    if (pacId && !ev.target.closest('button, a, input, select')) {
+      ev.preventDefault();
+      abrirMenu(ev.clientX, ev.clientY, construirMenuPaciente(pacId));
+      return;
+    }
+    const profId = findProfesionalId(ev.target);
+    if (profId && !ev.target.closest('button, a, input, select')) {
+      ev.preventDefault();
+      abrirMenu(ev.clientX, ev.clientY, construirMenuProfesional(profId));
+    }
   });
 
-  console.log('[ContextMenu] ✅ Click derecho y doble click en pacientes activados');
+  console.log('[ContextMenu] ✅ Click derecho y doble click en pacientes y profesionales activados');
 }
