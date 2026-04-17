@@ -8,6 +8,7 @@ import { instalarHC } from './historia-clinica.js';
 import { instalarReports } from './reports.js';
 import { instalarAdminUsuarios } from './admin-usuarios.js';
 import { instalarAdminPanel } from './admin/index.js';
+import { instalarConsolidacionSidebar } from './sidebar-consolidacion.js';
 
 // Exponer al HTML (onclick inline en el HTML legacy)
 window.doLogin  = doLogin;
@@ -48,6 +49,10 @@ async function iniciarERP() {
 
   // 1e. Módulos administrativos: config, facturación, caja, liquidaciones, stock
   await instalarAdminPanel();
+
+  // 1f. Consolidación del sidebar: Contabilidad y Comercial (con tabs)
+  //     Corre DESPUÉS de instalarAdminPanel para que sus items queden abajo.
+  instalarConsolidacionSidebar();
 
   // 2. Realtime + agenda de hoy
   suscribirRealtime();
