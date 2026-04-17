@@ -204,7 +204,7 @@ export async function hidratarPacientes() {
   popularSelectPacientes();
 
   if (typeof window.renderPacientes === 'function') {
-    try { window.renderPacientes(); } catch {}
+    try { window.renderPacientes(window.PACIENTES_DATA); } catch (e) { console.warn('[Bridge] renderPacientes:', e); }
   }
 }
 
