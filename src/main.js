@@ -6,6 +6,7 @@ import { cargarAgenda, suscribirRealtime, filterAgenda } from './agenda.js';
 import { instalarBridge } from './legacy-bridge.js';
 import { instalarHC } from './historia-clinica.js';
 import { instalarReports } from './reports.js';
+import { instalarAdminUsuarios } from './admin-usuarios.js';
 
 // Exponer al HTML (onclick inline en el HTML legacy)
 window.doLogin  = doLogin;
@@ -40,6 +41,9 @@ async function iniciarERP() {
   if (typeof window.updateDashboardKPIs === 'function') {
     window.updateDashboardKPIs();
   }
+
+  // 1d. Admin usuarios: agrega botón en sidebar (solo visible si admin)
+  instalarAdminUsuarios();
 
   // 2. Realtime + agenda de hoy
   suscribirRealtime();
