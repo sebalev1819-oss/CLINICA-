@@ -4129,7 +4129,7 @@ function renderProfesionales() {
   g.innerHTML = PROFESIONALES_DATA.map((p,i) => {
     const pct = Math.round((p.turnos/150)*100);
     const nsColor = p.ns > 8 ? 'var(--rose)' : p.ns > 5 ? 'var(--amber)' : 'var(--emerald)';
-    const [c1,c2] = gradients[i];
+    const [c1,c2] = gradients[i % gradients.length];
     return `
     <div class="prof-card">
       <div class="prof-header">

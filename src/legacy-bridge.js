@@ -139,14 +139,30 @@ export async function hidratarAgenda() {
 //  HIDRATAR CONSULTORIOS
 // ============================================================
 export async function hidratarConsultorios() {
+  // Sin embed: hay 2 FKs entre consultorios y profesionales (circular)
+  // y PostgREST no puede elegir. Hacemos join manual en cliente.
   const { data, error } = await supabase
     .from('consultorios')
-    .select('*, profesionales (nombre)')
+    .select('*')
     .order('id');
 
   if (error) { console.error('[Bridge] consultorios:', error.message); return; }
 
-  const mapeado = (data || []).map(mapConsultorioLegacy);
+  // Join manual con PROFESIONALES_DATA ya hidratado
+  const profesByConsultorio = {};
+  (window.PROFESIONALES_DATA || []).forEach(p => {
+    if (p.c != null) profesByConsultorio[p.c] = p.nombre;
+  });
+
+  const mapeado = (data || []).map(c => ({
+    id: c.id,
+    esp: c.especialidad,
+    estado: c.estado,
+    prof: profesByConsultorio[c.id] || '—',
+    pac: '—',
+    _real: true,
+  }));
+
   const enCurso = (window.AGENDA_DATA || []).filter(t => t.estado === 'En curso');
   mapeado.forEach(c => {
     const turno = enCurso.find(t => Number(t._consultorioId) === Number(c.id));
