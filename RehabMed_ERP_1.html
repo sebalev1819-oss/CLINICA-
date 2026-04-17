@@ -13,6 +13,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230369a1'/><text y='.9em' font-size='75' x='12'>🏥</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script type="module" src="/src/main.js"></script>
 <style>
 :root{
   --bg:#f0f4f8;--bg2:#e8edf4;--bg3:#ffffff;--bg4:#f5f7fa;
@@ -765,25 +766,19 @@ tbody tr:last-child td{border-bottom:none;}
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
       <span id="loginErrorMsg">Usuario o contraseña incorrectos</span>
     </div>
-    <form onsubmit="doLogin(event)" autocomplete="off">
+    <form id="loginForm" onsubmit="doLogin(event)" autocomplete="on">
       <div class="login-field">
-        <label for="loginUser">Usuario</label>
-        <div class="login-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
-        <input type="text" id="loginUser" placeholder="Ingresá tu usuario" autofocus>
+        <label for="loginUser">Email</label>
+        <div class="login-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+        <input type="email" id="loginUser" placeholder="tu@email.com" autocomplete="username" autofocus required>
       </div>
       <div class="login-field">
         <label for="loginPass">Contraseña</label>
         <div class="login-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
-        <input type="password" id="loginPass" placeholder="Ingresá tu contraseña">
+        <input type="password" id="loginPass" placeholder="Ingresá tu contraseña" autocomplete="current-password" required>
       </div>
-      <button type="submit" class="login-btn">Iniciar Sesión</button>
+      <button type="submit" class="login-btn" id="loginBtn">Iniciar Sesión</button>
     </form>
-    <div class="login-hint">
-      <div class="login-hint-title">Credenciales de prueba</div>
-      <div class="login-hint-row"><span class="login-hint-user">admin / admin123</span><span class="login-hint-role">Admin</span></div>
-      <div class="login-hint-row"><span class="login-hint-user">dra.moreno / moreno123</span><span class="login-hint-role">Profesional</span></div>
-      <div class="login-hint-row"><span class="login-hint-user">recepcion / recep123</span><span class="login-hint-role">Recepción</span></div>
-    </div>
     <div class="login-footer">RehabMed ERP v3.0 · © 2026</div>
   </div>
 </div>
@@ -2635,84 +2630,10 @@ Respondé con el número de tu opción 👇</textarea>
 
 <script>
 // ═══════════════════════════════════════════════════════
-//  AUTH — USERS & LOGIN
+//  AUTH — migrado a /src/auth.js (Supabase)
+//  doLogin, doLogout y applyRolePermissions los expone src/main.js
+//  como window.doLogin, window.doLogout (para onclick/onsubmit legacy).
 // ═══════════════════════════════════════════════════════
-const USERS = [
-  { id:1, user:'admin',      pass:'admin123',  nombre:'Sebastián Levin', rol:'admin',       iniciales:'SL' },
-  { id:2, user:'dra.moreno', pass:'moreno123', nombre:'Dra. Moreno',     rol:'profesional', iniciales:'DM' },
-  { id:3, user:'recepcion',  pass:'recep123',  nombre:'Ana Recepción',   rol:'recepcion',   iniciales:'AR' },
-  { id:4, user:'dr.rios',    pass:'rios123',   nombre:'Dr. Ríos',        rol:'profesional', iniciales:'DR' },
-];
-
-const ROLE_PERMISSIONS = {
-  admin: ['dashboard','agenda','pacientes','hclinica','profesionales','noshow','facturacion','stock','proveedores','rrhh','crm','marketing','bi','contabilidad','whatsapp','leadficha'],
-  profesional: ['dashboard','agenda','pacientes','hclinica','profesionales','noshow'],
-  recepcion: ['dashboard','agenda','pacientes','hclinica','noshow','stock','crm','whatsapp','leadficha'],
-};
-
-const ROLE_LABELS = { admin:'Administrador General', profesional:'Profesional Clínico', recepcion:'Recepción' };
-
-let _currentUser = null;
-
-function doLogin(e){
-  if(e) e.preventDefault();
-  const u = document.getElementById('loginUser').value.trim().toLowerCase();
-  const p = document.getElementById('loginPass').value;
-  const errEl = document.getElementById('loginError');
-
-  const user = USERS.find(x => x.user === u && x.pass === p);
-  if(!user){
-    errEl.classList.add('show');
-    document.getElementById('loginPass').value = '';
-    document.getElementById('loginPass').focus();
-    return;
-  }
-
-  _currentUser = user;
-  errEl.classList.remove('show');
-
-  // Update sidebar user card
-  document.getElementById('sidebarAvatar').textContent = user.iniciales;
-  document.getElementById('sidebarUserName').textContent = user.nombre;
-  document.getElementById('sidebarUserRole').textContent = ROLE_LABELS[user.rol] || user.rol;
-
-  // Apply role permissions
-  applyRolePermissions(user.rol);
-
-  // Transition
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('erpWrapper').classList.add('visible');
-
-  // Reset to dashboard
-  showModule('dashboard', null);
-}
-
-function doLogout(){
-  _currentUser = null;
-  document.getElementById('erpWrapper').classList.remove('visible');
-  document.getElementById('loginScreen').style.display = 'flex';
-  document.getElementById('loginUser').value = '';
-  document.getElementById('loginPass').value = '';
-  document.getElementById('loginError').classList.remove('show');
-  document.getElementById('loginUser').focus();
-
-  // Restore all nav items
-  document.querySelectorAll('.nav-item').forEach(n => {
-    n.style.display = '';
-  });
-}
-
-function applyRolePermissions(rol){
-  const allowed = ROLE_PERMISSIONS[rol] || [];
-  document.querySelectorAll('.nav-item').forEach(n => {
-    const onclick = n.getAttribute('onclick') || '';
-    const match = onclick.match(/showModule\('(\w+)'/);
-    if(match){
-      const modId = match[1];
-      n.style.display = allowed.includes(modId) ? '' : 'none';
-    }
-  });
-}
 
 // ═══════════════════════════════════════════════════════
 //  DATA
