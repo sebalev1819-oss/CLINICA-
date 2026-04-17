@@ -4,6 +4,9 @@
 import { doLogin, doLogout, restoreSession } from './auth.js';
 import { cargarAgenda, suscribirRealtime, filterAgenda } from './agenda.js';
 import { instalarBridge } from './legacy-bridge.js';
+import { instalarHC } from './historia-clinica.js';
+import { instalarReports } from './reports.js';
+import { instalarAdminUsuarios } from './admin-usuarios.js';
 
 // Exponer al HTML (onclick inline en el HTML legacy)
 window.doLogin  = doLogin;
@@ -29,6 +32,18 @@ async function iniciarERP() {
   // 1. Bridge: hidrata window.AGENDA_DATA y window.CONSULTORIOS_DATA
   //    (necesario ANTES del render para que el HTML vea datos reales)
   await instalarBridge();
+
+  // 1b. Historia clínica: conecta el módulo HC a Supabase
+  instalarHC();
+
+  // 1c. Reports: sobrescribe updateDashboardKPIs con cálculos reales
+  instalarReports();
+  if (typeof window.updateDashboardKPIs === 'function') {
+    window.updateDashboardKPIs();
+  }
+
+  // 1d. Admin usuarios: agrega botón en sidebar (solo visible si admin)
+  instalarAdminUsuarios();
 
   // 2. Realtime + agenda de hoy
   suscribirRealtime();

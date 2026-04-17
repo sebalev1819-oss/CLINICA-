@@ -725,3 +725,109 @@ tbody tr:last-child td{border-bottom:none;}
 /* ── ERP WRAPPER ── */
 #erpWrapper{display:none;}
 #erpWrapper.visible{display:flex;width:100%;height:100vh;}
+
+/* ═══════════════════════════════════════════════════════════
+   MOBILE IMPROVEMENTS (touch-friendly + layouts)
+   ═══════════════════════════════════════════════════════════ */
+
+/* Touch targets: mínimo 44x44px según WCAG en mobile */
+@media (max-width:768px){
+  /* Botones más gordos para dedos */
+  .btn{min-height:44px;padding:11px 18px;}
+  .btn-sm{min-height:36px;padding:8px 14px;}
+
+  /* Inputs con padding mayor y sin zoom-on-focus en iOS (font-size 16px) */
+  .form-input, .form-select, .global-search input, .search-box input{
+    font-size:16px;min-height:44px;padding:11px 14px;
+  }
+
+  /* Modales full-width con scroll */
+  .modal{
+    width:100% !important;max-width:100% !important;
+    margin:0;border-radius:14px 14px 0 0;
+    max-height:92vh;padding:20px 18px;
+    position:fixed;bottom:0;left:0;right:0;
+    animation:slideUpMobile 0.28s cubic-bezier(0.16,1,0.3,1);
+  }
+  @keyframes slideUpMobile{
+    from{transform:translateY(100%);}
+    to{transform:translateY(0);}
+  }
+  .modal-overlay{align-items:flex-end;}
+
+  /* Botón cerrar más grande y lejos del borde */
+  .modal-close{font-size:28px;padding:6px 10px;margin-top:0;}
+
+  /* Fila de acciones en modales: stack en mobile */
+  .modal > div:last-child{flex-direction:column-reverse;gap:8px !important;}
+  .modal > div:last-child .btn{width:100%;justify-content:center;}
+
+  /* Timeline de agenda: dejar más espacio */
+  .agenda-hour-block{grid-template-columns:55px 1fr;gap:10px;}
+  .agenda-hour-label{padding-right:8px;}
+  .agenda-hour-time{font-size:13px;}
+
+  /* Cards de turno: acciones en grid 2x2 en vez de wrap caótico */
+  .agenda-card-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .agenda-action-btn{justify-content:center;min-height:40px;}
+
+  /* Page header con título más chico */
+  .page-title{font-size:20px;}
+
+  /* Topbar: ocultar breadcrumb para dar espacio al search */
+  .breadcrumb-root, .breadcrumb-sep{display:none;}
+  .breadcrumb-cur{font-size:15px;}
+  .global-search{width:auto;flex:1;max-width:none;}
+
+  /* Tabla: scroll horizontal obligatorio en tablas anchas */
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  th, td{padding:9px 10px;font-size:12px;}
+
+  /* Stat cards compactas */
+  .stat-card{padding:14px 16px;}
+  .stat-value{font-size:24px;}
+
+  /* Sidebar: items más altos */
+  .nav-item{padding:12px 14px;min-height:44px;}
+}
+
+/* Mejora específica para el modal Nuevo Paciente (con 30+ campos)
+   en mobile: hacer el sticky header más compacto */
+@media (max-width:768px){
+  #modalNuevoPaciente .modal{max-height:95vh;}
+  #modalNuevoPaciente .modal-title{font-size:16px;}
+  #modalNuevoPaciente .modal > div:first-child{padding:10px 0 !important;}
+}
+
+/* Pantalla muy chica: font-size base algo mayor para legibilidad */
+@media (max-width:380px){
+  body{font-size:14px;}
+  .stat-value{font-size:20px;}
+  .page-title{font-size:18px;}
+  .card-pad{padding:14px 16px;}
+  .modal{padding:16px 14px;}
+}
+
+/* Landscape en mobile: achicar login card para que entre */
+@media (max-width:900px) and (max-height:500px){
+  .login-card{padding:24px 24px 20px;width:380px;}
+  .login-field{margin-bottom:12px;}
+  .login-subtitle{margin-bottom:18px;}
+}
+
+/* Cierre del sidebar en mobile al clickear overlay */
+@media (max-width:768px){
+  .sidebar-overlay{display:none;}
+  .sidebar-overlay.open{display:block;}
+  /* Escape: evitar scroll del body cuando sidebar abierto */
+  body.sidebar-open{overflow:hidden;}
+}
+
+/* Print (para imprimir historia clínica) */
+@media print{
+  #sidebar, #topbar, .sidebar-toggle, .btn, .modal-overlay,
+  .agenda-card-actions, .notif-panel{display:none !important;}
+  #content{padding:0;overflow:visible !important;}
+  body, html{overflow:visible !important;height:auto !important;}
+  .evolution-item{break-inside:avoid;}
+}
