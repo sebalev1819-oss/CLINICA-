@@ -3977,11 +3977,12 @@ function renderPacientes(data) {
       </td>
       <td style="font-weight:700;color:${p.deuda>0?'var(--rose)':'var(--emerald)'}">${p.deuda>0?'$'+p.deuda.toLocaleString('es-AR'):'Al día'}</td>
       <td>
-        <div style="display:flex;gap:4px;align-items:center">
-          <button class="btn btn-ghost btn-sm" onclick="showHCL('${p.id}')" title="Ver historia clínica">HCl</button>
-          <button class="btn btn-ghost btn-sm" data-pac-action="agendar" data-pac-id-action="${p.id}" title="Nuevo turno" style="padding:6px 9px;color:var(--sky)">📅</button>
-          <button class="btn btn-ghost btn-sm" data-pac-action="ctacte"   data-pac-id-action="${p.id}" title="Cuenta corriente" style="padding:6px 9px;color:var(--amber)">💰</button>
-          <button class="btn btn-ghost btn-sm" data-pac-action="whatsapp" data-pac-id-action="${p.id}" title="Enviar WhatsApp" style="padding:6px 9px;color:var(--emerald)">💬</button>
+        <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-sm" onclick="showHCL('${p.id}')" title="Ver historia clínica" style="background:rgba(3,105,161,0.1);color:var(--sky);border:1px solid rgba(3,105,161,0.25);font-size:10px;padding:5px 9px">HC</button>
+          <button class="btn btn-sm" data-pac-action="agendar" data-pac-id-action="${p.id}" title="Crear nuevo turno para este paciente" style="background:rgba(124,58,237,0.1);color:var(--violet);border:1px solid rgba(124,58,237,0.25);font-size:10px;padding:5px 9px">Turno</button>
+          <button class="btn btn-sm" data-pac-action="ctacte"   data-pac-id-action="${p.id}" title="Ver cuenta corriente" style="background:rgba(217,119,6,0.1);color:var(--amber);border:1px solid rgba(217,119,6,0.25);font-size:10px;padding:5px 9px">Cta Cte</button>
+          <button class="btn btn-sm" data-pac-action="whatsapp" data-pac-id-action="${p.id}" title="Enviar WhatsApp" style="background:rgba(5,150,105,0.1);color:var(--emerald);border:1px solid rgba(5,150,105,0.25);font-size:10px;padding:5px 9px">WhatsApp</button>
+          <button class="btn btn-sm" data-pac-action="menu"     data-pac-id-action="${p.id}" title="Más opciones (ver historial, próximos turnos, editar, dar de alta)" style="background:rgba(0,0,0,0.05);color:var(--text2);border:1px solid var(--border);font-size:12px;padding:5px 9px;font-weight:900">⋮</button>
         </div>
       </td>
     </tr>`;
