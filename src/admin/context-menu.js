@@ -721,6 +721,10 @@ export function instalarContextMenuPacientes() {
         const nombre = paciente?.nombre || 'paciente';
         const msg = encodeURIComponent(`Hola ${nombre}, te escribimos desde la clínica.`);
         window.open(`https://wa.me/${tel.replace(/\D/g,'')}?text=${msg}`, '_blank');
+      } else if (action === 'menu') {
+        // Abrir el menú contextual completo en la posición del botón
+        const rect = btnPac.getBoundingClientRect();
+        abrirMenu(rect.left, rect.bottom + 4, construirMenuPaciente(pacId));
       }
     }
   });
