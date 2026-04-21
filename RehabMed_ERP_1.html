@@ -1128,7 +1128,7 @@ tbody tr:last-child td{border-bottom:none;}
     <div class="module" id="mod-pacientes">
       <div class="page-header-row">
         <div><div class="page-title">Pacientes & Historia Clínica</div><div class="page-sub">Historia clínica digital · 284 pacientes activos</div></div>
-        <button class="btn btn-sky" onclick="openModal('modalNuevoPaciente')">
+        <button class="btn btn-sky" onclick="resetModalPacienteMode(); openModal('modalNuevoPaciente')">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Nuevo Paciente
         </button>
@@ -1163,7 +1163,13 @@ tbody tr:last-child td{border-bottom:none;}
     <div class="module" id="mod-hclinica">
       <div class="page-header-row">
         <div><div class="page-title" id="hcl-paciente-nombre">Historia Clínica</div><div class="page-sub" id="hcl-paciente-meta">—</div></div>
-        <button class="btn btn-ghost" onclick="showModule('pacientes',null)">← Volver a Pacientes</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-sky" onclick="editarPacienteActual()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Editar Ficha
+          </button>
+          <button class="btn btn-ghost" onclick="showModule('pacientes',null)">← Volver a Pacientes</button>
+        </div>
       </div>
       <div class="grid-2">
         <div style="display:flex;flex-direction:column;gap:14px">
@@ -1205,6 +1211,7 @@ tbody tr:last-child td{border-bottom:none;}
           <div class="hcl-section-title" style="margin-bottom:0">💰 Cuenta Corriente</div>
           <div style="display:flex;gap:8px;align-items:center">
             <span class="badge badge-emerald" id="hcl-saldo-badge">Saldo: $0</span>
+            <button class="btn btn-ghost btn-sm" onclick="cargarConceptoHCL()">+ Cargar Concepto</button>
             <button class="btn btn-sky btn-sm" onclick="registrarPagoHCL()">+ Registrar Pago</button>
           </div>
         </div>
@@ -2389,8 +2396,8 @@ Respondé con el número de tu opción 👇</textarea>
 <div class="modal-overlay" id="modalNuevoPaciente">
   <div class="modal" style="width:680px;max-height:90vh;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;position:sticky;top:-28px;background:var(--bg3);padding:12px 0;z-index:1">
-      <div class="modal-title">+ Nuevo Paciente — Ficha Completa</div>
-      <button class="modal-close" onclick="closeModal('modalNuevoPaciente')">×</button>
+      <div class="modal-title" id="modalPacienteTitle">+ Nuevo Paciente — Ficha Completa</div>
+      <button class="modal-close" onclick="closeModal('modalNuevoPaciente'); resetModalPacienteMode()">×</button>
     </div>
 
     <!-- SECCIÓN 1: DATOS PERSONALES -->
@@ -2513,9 +2520,9 @@ Respondé con el número de tu opción 👇</textarea>
     </div>
 
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:10px;position:sticky;bottom:-28px;background:var(--bg3);padding:12px 0;border-top:1px solid var(--border)">
-      <button class="btn btn-ghost" onclick="closeModal('modalNuevoPaciente')">Cancelar</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalNuevoPaciente'); resetModalPacienteMode()">Cancelar</button>
       <button class="btn btn-ghost" onclick="showToast('🖨️ Formulario enviado a impresión')">Imprimir Ficha</button>
-      <button class="btn btn-sky" onclick="guardarNuevoPaciente()">Guardar Paciente</button>
+      <button class="btn btn-sky" id="btnGuardarPaciente" onclick="guardarPacienteDispatch()">Guardar Paciente</button>
     </div>
   </div>
 </div>
@@ -4047,37 +4054,45 @@ function showHCL(id) {
 function renderTurnosPaciente(nombre) {
   const tb = document.getElementById('hcl-turnos');
   if(!tb) return;
-  
-  let turnos = AGENDA_DATA.filter(t => t.pac === nombre).map(t => ({...t, fecha: "Hoy"}));
-  let noshows = NOSHOW_DATA.filter(t => t.pac === nombre).map(t => ({
-    hora: t.hora, pac: t.pac, prof: t.prof, esp: "S/D", tipo: "Presencial", estado: "No Show", fecha: "Hoy"
-  }));
-  
-  let allTurnos = turnos.concat(noshows);
-  
-  // Agregar historial simulado para mostrar toda la variedad de estados
-  allTurnos.push({ fecha: "Próxima Semana", hora: "09:00", prof: "Profesor Asignado", esp: "Kinesiología", tipo: "Presencial", estado: "Pendiente" });
-  allTurnos.push({ fecha: "Ayer", hora: "14:00", prof: "Profesor Asignado", esp: "Kinesiología", tipo: "Presencial", estado: "Reprogramado" });
-  allTurnos.push({ fecha: "Hace 1 semana", hora: "10:30", prof: "Profesor Asignado", esp: "Kinesiología", tipo: "Presencial", estado: "Confirmado" });
-  allTurnos.push({ fecha: "Hace 2 semanas", hora: "11:00", prof: "Profesor Asignado", esp: "Kinesiología", tipo: "Presencial", estado: "Cancelado" });
-  allTurnos.push({ fecha: "Hace 3 semanas", hora: "09:30", prof: "Profesor Asignado", esp: "Kinesiología", tipo: "Presencial", estado: "No Show" });
 
-  // Mejorar el historial tomando datos reales del paciente
-  const realProf = allTurnos.find(t => t.prof !== "Profesor Asignado")?.prof || "Dra. Moreno";
-  const realEsp = allTurnos.find(t => t.esp !== "Kinesiología" && t.esp !== "S/D")?.esp || "Kinesiología";
-  
-  allTurnos = allTurnos.map(t => {
-    if(t.prof === "Profesor Asignado") t.prof = realProf;
-    if(t.esp === "Kinesiología" || t.esp === "S/D") t.esp = realEsp;
-    return t;
-  });
+  // Turnos reales del paciente: agenda actual + histórico archivado + no-shows
+  const vigentes = AGENDA_DATA.filter(t => t.pac === nombre);
+  const historicos = (typeof TURNOS_HISTORICOS !== 'undefined' ? TURNOS_HISTORICOS : []).filter(t => t.pac === nombre);
+  const noshows = NOSHOW_DATA.filter(t => t.pac === nombre).map(t => ({
+    hora: t.hora, pac: t.pac, prof: t.prof, esp: t.esp || 'S/D', tipo: 'Presencial', estado: 'No Show', fecha: t.fecha || 'Hoy'
+  }));
+
+  // Dedup noshows ya presentes en vigentes (mismo hora+pac)
+  const vigenteKeys = new Set(vigentes.map(t => `${t.hora}|${t.pac}`));
+  const allTurnos = vigentes.concat(historicos, noshows.filter(n => !vigenteKeys.has(`${n.hora}|${n.pac}`)));
+
+  if(allTurnos.length === 0){
+    tb.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text4);padding:24px">
+      <div style="font-size:24px;margin-bottom:6px">📅</div>
+      <div style="font-size:13px;font-weight:600;color:var(--text3)">Sin turnos registrados</div>
+      <div style="font-size:11px;margin-top:4px">Creá un turno desde el botón superior</div>
+    </td></tr>`;
+    return;
+  }
+
+  // Ordenar: más recientes / futuros primero
+  const rankFecha = (f) => {
+    const s = String(f || '').toLowerCase();
+    if(s.includes('próx') || s.includes('prox') || s.includes('mañana')) return 0;
+    if(s === 'hoy') return 1;
+    if(s.includes('ayer')) return 2;
+    if(s.includes('semana')) return 3;
+    if(s.includes('mes')) return 4;
+    return 5;
+  };
+  allTurnos.sort((a,b) => rankFecha(a.fecha) - rankFecha(b.fecha) || String(a.hora||'').localeCompare(String(b.hora||'')));
 
   tb.innerHTML = allTurnos.map(t => `
     <tr>
-      <td><div style="font-weight:600;color:var(--text)">${t.fecha}</div><div style="font-size:10px;color:var(--text4)">${t.hora}</div></td>
-      <td>${t.prof}</td>
-      <td style="font-size:12px;color:var(--text3)">${t.esp}</td>
-      <td><span class="badge ${badgeClass(t.tipo)}" style="font-size:10px">${t.tipo}</span></td>
+      <td><div style="font-weight:600;color:var(--text)">${t.fecha || '—'}</div><div style="font-size:10px;color:var(--text4)">${t.hora || ''}</div></td>
+      <td>${t.prof || '—'}</td>
+      <td style="font-size:12px;color:var(--text3)">${t.esp || '—'}</td>
+      <td><span class="badge ${badgeClass(t.tipo || 'Presencial')}" style="font-size:10px">${t.tipo || 'Presencial'}</span></td>
       <td><span class="badge ${badgeClass(t.estado)}" style="font-size:10px">${t.estado}</span></td>
     </tr>
   `).join('');
@@ -4699,6 +4714,7 @@ function addStockEntry(){
 // (Declaradas aquí para que _DB_STORES pueda referenciarlas correctamente)
 let COLA_FACTURACION = [];
 let CUENTAS_CORRIENTES = {}; // { pacienteId: [{fecha,concepto,tipo,monto}] }
+let TURNOS_HISTORICOS = [];  // Turnos archivados (finalizados/cancelados/reprogramados) con fecha real
 
 const TARIFAS_ESP = {
   'Kinesiología':8400,'Fisioterapia':7800,'Psicología':7200,
@@ -4843,6 +4859,7 @@ const _DB_STORES = {
   rehabmed_profesionales:() => PROFESIONALES_DATA,
   rehabmed_consultorios:() => CONSULTORIOS_DATA,
   rehabmed_noshow:      () => NOSHOW_DATA,
+  rehabmed_turnos_hist: () => TURNOS_HISTORICOS,
   rehabmed_ct_facturas: () => CT_FACTURAS,
   rehabmed_ct_debitos:  () => CT_DEBITOS,
   rehabmed_ct_reclamos: () => CT_RECLAMOS,
@@ -4917,6 +4934,7 @@ function loadFromLocal(){
     loadArray('rehabmed_profesionales', PROFESIONALES_DATA);
     loadArray('rehabmed_consultorios', CONSULTORIOS_DATA);
     loadArray('rehabmed_noshow', NOSHOW_DATA);
+    loadArray('rehabmed_turnos_hist', TURNOS_HISTORICOS);
     loadArray('rehabmed_ct_facturas', CT_FACTURAS);
     loadArray('rehabmed_ct_debitos', CT_DEBITOS);
     loadArray('rehabmed_ct_reclamos', CT_RECLAMOS);
@@ -5709,27 +5727,7 @@ function renderCtaCte(pacId){
   const tb = document.getElementById('hcl-ctacte');
   const badge = document.getElementById('hcl-saldo-badge');
   if(!tb) return;
-  
-  const movs = CUENTAS_CORRIENTES[pacId] || [];
-  const pac = PACIENTES_DATA.find(p => p.id === pacId);
-  
-  // Add sample data if empty (for demo)
-  if(movs.length === 0 && pac){
-    const sample = [
-      {fecha:'01/03/2025',concepto:`Sesión Kinesiología · Dra. Moreno`,tipo:'Cargo',monto:8400},
-      {fecha:'01/03/2025',concepto:'Pago Transferencia',tipo:'Pago',monto:-8400},
-      {fecha:'08/03/2025',concepto:`Sesión Kinesiología · Dra. Moreno`,tipo:'Cargo',monto:8400},
-      {fecha:'08/03/2025',concepto:'Pago OSDE',tipo:'Pago',monto:-8400},
-      {fecha:'15/03/2025',concepto:`Sesión Kinesiología · Dra. Moreno`,tipo:'Cargo',monto:8400},
-    ];
-    if(pac.deuda > 0){
-      sample.push({fecha:'18/03/2025',concepto:`Sesión Kinesiología`,tipo:'Cargo',monto:pac.deuda});
-    } else {
-      sample.push({fecha:'15/03/2025',concepto:'Pago Efectivo',tipo:'Pago',monto:-8400});
-    }
-    CUENTAS_CORRIENTES[pacId] = sample;
-  }
-  
+
   const allMovs = CUENTAS_CORRIENTES[pacId] || [];
   let saldo = 0;
   const rows = allMovs.map(m => {
@@ -5745,12 +5743,17 @@ function renderCtaCte(pacId){
       <td style="font-weight:700;color:${saldoColor}">$${saldo.toLocaleString('es-AR')}</td>
     </tr>`;
   });
-  
-  tb.innerHTML = rows.join('');
+
   if(rows.length === 0){
-    tb.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text4);padding:16px">Sin movimientos</td></tr>';
+    tb.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text4);padding:24px">
+      <div style="font-size:24px;margin-bottom:6px">💰</div>
+      <div style="font-size:13px;font-weight:600;color:var(--text3)">Sin movimientos en cuenta corriente</div>
+      <div style="font-size:11px;margin-top:4px">Registrá un pago o cargá un concepto con los botones superiores</div>
+    </td></tr>`;
+  } else {
+    tb.innerHTML = rows.join('');
   }
-  
+
   if(badge){
     const badgeClass = saldo > 0 ? 'badge-rose' : 'badge-emerald';
     badge.className = `badge ${badgeClass}`;
@@ -5763,10 +5766,10 @@ function registrarPagoHCL(){
   if(!_currentHCLPacId) return;
   const pac = PACIENTES_DATA.find(p => p.id === _currentHCLPacId);
   if(!pac) return;
-  
+
   const monto = prompt(`Registrar pago para ${pac.nombre}\nDeuda actual: $${(pac.deuda||0).toLocaleString('es-AR')}\n\nMonto del pago:`);
   if(!monto || isNaN(parseFloat(monto))) return;
-  
+
   const montoNum = parseFloat(monto);
   if(!CUENTAS_CORRIENTES[pac.id]) CUENTAS_CORRIENTES[pac.id] = [];
   CUENTAS_CORRIENTES[pac.id].push({
@@ -5780,6 +5783,35 @@ function registrarPagoHCL(){
   renderPacientes(PACIENTES_DATA);
   saveToLocal();
   showToast(`✅ Pago de $${montoNum.toLocaleString('es-AR')} registrado para ${pac.nombre}`);
+}
+
+function cargarConceptoHCL(){
+  if(!_currentHCLPacId) return;
+  const pac = PACIENTES_DATA.find(p => p.id === _currentHCLPacId);
+  if(!pac) return;
+
+  const concepto = prompt(`Cargar concepto para ${pac.nombre}\n\nEj: "Sesión Kinesiología · Dra. Moreno"`);
+  if(!concepto || !concepto.trim()) return;
+
+  const monto = prompt(`Monto del cargo (positivo, se sumará a la deuda):`);
+  const montoNum = parseFloat(monto);
+  if(!monto || isNaN(montoNum) || montoNum <= 0){
+    showToast('⚠️ Monto inválido');
+    return;
+  }
+
+  if(!CUENTAS_CORRIENTES[pac.id]) CUENTAS_CORRIENTES[pac.id] = [];
+  CUENTAS_CORRIENTES[pac.id].push({
+    fecha: new Date().toLocaleDateString('es-AR'),
+    concepto: concepto.trim(),
+    tipo: 'Cargo',
+    monto: montoNum
+  });
+  pac.deuda = (pac.deuda || 0) + montoNum;
+  renderCtaCte(pac.id);
+  renderPacientes(PACIENTES_DATA);
+  saveToLocal();
+  showToast(`✅ Cargo de $${montoNum.toLocaleString('es-AR')} asentado para ${pac.nombre}`);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -5924,12 +5956,176 @@ function guardarNuevoPaciente(){
   renderPacientes(PACIENTES_DATA);
   updateDashboardKPIs();
   saveToLocal();
-  
+
   // Clear form
   document.getElementById('pacNombre').value = '';
   document.getElementById('pacApellido').value = '';
   document.getElementById('pacDNI').value = '';
   document.getElementById('pacDiag').value = '';
+
+  if(typeof resetModalPacienteMode === 'function') resetModalPacienteMode();
+}
+
+// ═══════════════════════════════════════════════════════
+//  EDITAR FICHA DE PACIENTE (reusa modalNuevoPaciente)
+// ═══════════════════════════════════════════════════════
+let _editandoPacienteId = null;
+
+function editarPacienteActual(){
+  if(!_currentHCLPacId){ showToast('⚠️ No hay paciente seleccionado'); return; }
+  editarPaciente(_currentHCLPacId);
+}
+
+function editarPaciente(id){
+  const p = PACIENTES_DATA.find(x => x.id === id);
+  if(!p){ showToast('⚠️ Paciente no encontrado'); return; }
+
+  _editandoPacienteId = id;
+
+  // Pre-llenar el formulario con datos actuales
+  const nombreCompleto = (p.nombre || '').trim().split(' ');
+  const nombre = nombreCompleto.slice(0, Math.max(1, nombreCompleto.length - 1)).join(' ');
+  const apellido = nombreCompleto.length > 1 ? nombreCompleto[nombreCompleto.length - 1] : '';
+
+  const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val ?? ''; };
+
+  setVal('pacNombre', p._nombreOnly ?? nombre);
+  setVal('pacApellido', p._apellidoOnly ?? apellido);
+  setVal('pacDNI', p.dni);
+  setVal('pacFechaNac', p.fechaNac);
+  setVal('pacGenero', p.genero);
+  setVal('pacEstCivil', p.estCivil);
+  setVal('pacTel', p.tel);
+  setVal('pacTel2', p.tel2);
+  setVal('pacEmail', p.email);
+  setVal('pacDir', p.dir);
+  setVal('pacOcupacion', p.ocupacion);
+  setVal('pacNacionalidad', p.nacionalidad || 'Argentina');
+  setVal('pacCob', p.cob);
+  setVal('pacAfiliado', p.afiliado);
+  setVal('pacPlan', p.plan);
+  setVal('pacVigencia', p.vigencia);
+  setVal('pacDiag', p.diag);
+  setVal('pacDiag2', p.diag2);
+  setVal('pacEsp', p.esp);
+  setVal('pacMedDer', p.medDer);
+  setVal('pacMedMat', p.medMat);
+  setVal('pacSesiones', p.ses);
+  setVal('pacSangre', p.sangre);
+  setVal('pacPesoAltura', p.pesoAltura);
+  setVal('pacAlergias', p.alergias);
+  setVal('pacMedicacion', p.medicacion);
+  setVal('pacCirugias', p.cirugias);
+  setVal('pacCronicas', p.cronicas);
+  setVal('pacImplante', p.implante);
+  setVal('pacEmbarazo', p.embarazo);
+  setVal('pacAuth', p.auth);
+  setVal('pacAuthFecha', p.authFecha);
+  setVal('pacAuthVenc', p.authVenc);
+  setVal('pacAuthEst', p.authEst);
+  setVal('pacEmergNombre', p.emergNombre);
+  setVal('pacEmergRel', p.emergRel);
+  setVal('pacEmergTel', p.emergTel);
+  setVal('pacEmergTel2', p.emergTel2);
+  setVal('pacEmergDir', p.emergDir);
+  setVal('pacObs', p.obs);
+  setVal('pacMotivo', p.motivo);
+
+  // Cambiar título y botón a modo edición
+  const title = document.getElementById('modalPacienteTitle');
+  const btn   = document.getElementById('btnGuardarPaciente');
+  if(title) title.textContent = `✏️ Editar Paciente — ${p.ref || ''}`;
+  if(btn)   btn.textContent   = 'Guardar Cambios';
+
+  openModal('modalNuevoPaciente');
+}
+
+function guardarPacienteDispatch(){
+  if(_editandoPacienteId){
+    guardarEdicionPaciente();
+  } else {
+    guardarNuevoPaciente();
+  }
+}
+
+function guardarEdicionPaciente(){
+  const id = _editandoPacienteId;
+  const p = PACIENTES_DATA.find(x => x.id === id);
+  if(!p){ showToast('⚠️ Paciente no encontrado'); return; }
+
+  const getVal = (id) => { const el = document.getElementById(id); return el ? el.value : ''; };
+
+  const nombre = getVal('pacNombre').trim();
+  const apellido = getVal('pacApellido').trim();
+  if(!nombre || !apellido){
+    showToast('⚠️ Nombre y Apellido son obligatorios');
+    return;
+  }
+
+  // Actualizar campos visibles en la tabla y HCl
+  p.nombre        = nombre + ' ' + apellido;
+  p._nombreOnly   = nombre;
+  p._apellidoOnly = apellido;
+  p.dni           = getVal('pacDNI') || p.dni;
+  p.cob           = getVal('pacCob') || p.cob;
+  p.diag          = getVal('pacDiag') || getVal('pacMotivo') || p.diag;
+  const sesiones  = parseInt(getVal('pacSesiones'));
+  if(!isNaN(sesiones)) p.ses = sesiones;
+
+  // Campos extendidos
+  p.fechaNac     = getVal('pacFechaNac');
+  p.genero       = getVal('pacGenero');
+  p.estCivil     = getVal('pacEstCivil');
+  p.tel          = getVal('pacTel');
+  p.tel2         = getVal('pacTel2');
+  p.email        = getVal('pacEmail');
+  p.dir          = getVal('pacDir');
+  p.ocupacion    = getVal('pacOcupacion');
+  p.nacionalidad = getVal('pacNacionalidad');
+  p.afiliado     = getVal('pacAfiliado');
+  p.plan         = getVal('pacPlan');
+  p.vigencia     = getVal('pacVigencia');
+  p.diag2        = getVal('pacDiag2');
+  p.esp          = getVal('pacEsp');
+  p.medDer       = getVal('pacMedDer');
+  p.medMat       = getVal('pacMedMat');
+  p.sangre       = getVal('pacSangre');
+  p.pesoAltura   = getVal('pacPesoAltura');
+  p.alergias     = getVal('pacAlergias');
+  p.medicacion   = getVal('pacMedicacion');
+  p.cirugias     = getVal('pacCirugias');
+  p.cronicas     = getVal('pacCronicas');
+  p.implante     = getVal('pacImplante');
+  p.embarazo     = getVal('pacEmbarazo');
+  p.auth         = getVal('pacAuth');
+  p.authFecha    = getVal('pacAuthFecha');
+  p.authVenc     = getVal('pacAuthVenc');
+  p.authEst      = getVal('pacAuthEst');
+  p.emergNombre  = getVal('pacEmergNombre');
+  p.emergRel     = getVal('pacEmergRel');
+  p.emergTel     = getVal('pacEmergTel');
+  p.emergTel2    = getVal('pacEmergTel2');
+  p.emergDir     = getVal('pacEmergDir');
+  p.obs          = getVal('pacObs');
+  p.motivo       = getVal('pacMotivo');
+
+  saveToLocal();
+  closeModal('modalNuevoPaciente');
+  showToast(`✅ Ficha actualizada: ${p.nombre}`);
+
+  // Re-render tabla y HCl si está abierto
+  renderPacientes(PACIENTES_DATA);
+  if(_currentHCLPacId === id) showHCL(id);
+
+  resetModalPacienteMode();
+}
+
+function resetModalPacienteMode(){
+  _editandoPacienteId = null;
+  const title = document.getElementById('modalPacienteTitle');
+  const btn   = document.getElementById('btnGuardarPaciente');
+  if(title) title.textContent = '+ Nuevo Paciente — Ficha Completa';
+  if(btn)   btn.textContent   = 'Guardar Paciente';
 }
 
 // ═══════════════════════════════════════════════════════
