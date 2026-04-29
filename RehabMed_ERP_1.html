@@ -13,9 +13,8 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230369a1'/><text y='.9em' font-size='75' x='12'>🏥</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script type="module" src="/src/main.js"></script>
-<link rel="stylesheet" href="/src/styles/main.css">
-<style data-legacy-removed>
+<script type="module" src="src/main.js"></script>
+<style>
 :root{
   --bg:#f0f4f8;--bg2:#e8edf4;--bg3:#ffffff;--bg4:#f5f7fa;
   --surface:rgba(255,255,255,0.92);--surface2:rgba(241,245,249,0.8);
@@ -258,12 +257,13 @@ nav{flex:1;padding:0 10px;overflow-y:auto;}
 .stat-desc{font-size:11px;color:var(--text3);}
 
 /* ── TABLE ── */
-.table-wrap{overflow-x:auto;}
+.table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border);background:var(--surface);box-shadow:var(--shadow-sm);}
 table{width:100%;border-collapse:collapse;}
-thead tr{background:rgba(0,0,0,0.02);}
-th{padding:11px 18px;text-align:left;font-size:10px;font-weight:700;color:var(--text3);letter-spacing:0.07em;text-transform:uppercase;white-space:nowrap;border-bottom:1px solid var(--border);}
-td{padding:13px 18px;font-size:13px;color:var(--text2);border-bottom:1px solid rgba(0,0,0,0.04);vertical-align:middle;}
-tbody tr:hover{background:rgba(3,105,161,0.03);}
+thead tr{background:var(--bg3);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:2;}
+th{padding:14px 20px;text-align:left;font-size:10px;font-weight:800;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;white-space:nowrap;}
+td{padding:16px 20px;font-size:13px;color:var(--text2);border-bottom:1px solid rgba(0,0,0,0.03);vertical-align:middle;transition:all 0.2s ease;}
+tbody tr{transition:all 0.2s ease;}
+tbody tr:hover{background:rgba(3,105,161,0.04);transform:scale(1.001);box-shadow:inset 3px 0 0 var(--sky);}
 tbody tr:last-child td{border-bottom:none;}
 
 /* ── BADGE ── */
@@ -765,21 +765,27 @@ tbody tr:last-child td{border-bottom:none;}
     <div class="login-subtitle">Sistema de Gestión Clínica · Iniciar Sesión</div>
     <div class="login-error" id="loginError">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-      <span id="loginErrorMsg">Usuario o contraseña incorrectos</span>
+      <span id="loginErrorMsg">Email o contraseña incorrectos</span>
     </div>
-    <form id="loginForm" onsubmit="doLogin(event)" autocomplete="on">
+    <form id="loginForm" onsubmit="doLogin(event)" autocomplete="off">
       <div class="login-field">
         <label for="loginUser">Email</label>
-        <div class="login-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
-        <input type="email" id="loginUser" placeholder="tu@email.com" autocomplete="username" autofocus required>
+        <div class="login-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <input type="email" id="loginUser" placeholder="tu@email.com" autocomplete="username" autofocus>
       </div>
       <div class="login-field">
         <label for="loginPass">Contraseña</label>
         <div class="login-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
-        <input type="password" id="loginPass" placeholder="Ingresá tu contraseña" autocomplete="current-password" required>
+        <input type="password" id="loginPass" placeholder="Ingresá tu contraseña" autocomplete="current-password">
       </div>
-      <button type="submit" class="login-btn" id="loginBtn">Iniciar Sesión</button>
+      <button type="submit" class="login-btn" id="loginBtn">Ingresar</button>
     </form>
+    <div class="login-hint">
+      <div class="login-hint-title">Usuarios del equipo</div>
+      <div class="login-hint-row"><span class="login-hint-user">admin@rehabmed.com</span><span class="login-hint-role">Admin</span></div>
+      <div class="login-hint-row"><span class="login-hint-user">dra.moreno@rehabmed.com</span><span class="login-hint-role">Profesional</span></div>
+      <div class="login-hint-row"><span class="login-hint-user">recepcion@rehabmed.com</span><span class="login-hint-role">Recepción</span></div>
+    </div>
     <div class="login-footer">RehabMed ERP v3.0 · © 2026</div>
   </div>
 </div>
@@ -935,23 +941,23 @@ tbody tr:last-child td{border-bottom:none;}
       <div class="grid-4">
         <div class="stat-card" data-color="sky">
           <div class="stat-label">Turnos Hoy <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg></div>
-          <div class="stat-value">87<span style="font-size:16px;color:var(--text3);font-weight:500;">/102</span></div>
-          <div class="stat-footer"><span class="stat-trend up">↑ 4.2%</span><span class="stat-desc">85% ocupación</span></div>
+          <div class="stat-value">—</div>
+          <div class="stat-footer"><span class="stat-trend"></span><span class="stat-desc">Cargando...</span></div>
         </div>
         <div class="stat-card" data-color="emerald">
-          <div class="stat-label">Facturación Mar <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-          <div class="stat-value">$1.92M</div>
-          <div class="stat-footer"><span class="stat-trend up">↑ 7.8%</span><span class="stat-desc">vs $1.78M Feb</span></div>
+          <div class="stat-label">Sesiones del Mes <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+          <div class="stat-value">—</div>
+          <div class="stat-footer"><span class="stat-trend"></span><span class="stat-desc">Cargando...</span></div>
         </div>
         <div class="stat-card" data-color="amber">
           <div class="stat-label">No-Show Rate <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-          <div class="stat-value">6.4%</div>
-          <div class="stat-footer"><span class="stat-trend up" style="color:var(--emerald)">↓ 1.2%</span><span class="stat-desc">Objetivo &lt;8%</span></div>
+          <div class="stat-value">—</div>
+          <div class="stat-footer"><span class="stat-trend"></span><span class="stat-desc">Cargando...</span></div>
         </div>
         <div class="stat-card" data-color="violet">
           <div class="stat-label">Pacientes Activos <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-          <div class="stat-value">284</div>
-          <div class="stat-footer"><span class="stat-trend up">↑ 4.4%</span><span class="stat-desc">+12 este mes</span></div>
+          <div class="stat-value">—</div>
+          <div class="stat-footer"><span class="stat-trend"></span><span class="stat-desc">Cargando...</span></div>
         </div>
       </div>
 
@@ -1077,7 +1083,7 @@ tbody tr:last-child td{border-bottom:none;}
           <div style="display:flex;gap:8px;align-items:center">
             <div class="search-box">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input type="text" placeholder="Buscar paciente o profesional..." oninput="filterAgenda(this.value)">
+              <input type="text" placeholder="Buscar paciente o profesional..." oninput="window.AgendaMod && window.AgendaMod.filterAgenda(this.value)">
             </div>
             <button class="btn btn-ghost btn-sm" onclick="exportAgendaCSV()">Exportar CSV</button>
             <div id="agendaViewToggle" style="display:flex;gap:4px;background:rgba(0,0,0,0.04);border:1px solid var(--border);border-radius:8px;padding:3px">
@@ -1128,7 +1134,7 @@ tbody tr:last-child td{border-bottom:none;}
     <div class="module" id="mod-pacientes">
       <div class="page-header-row">
         <div><div class="page-title">Pacientes & Historia Clínica</div><div class="page-sub">Historia clínica digital · 284 pacientes activos</div></div>
-        <button class="btn btn-sky" onclick="openModal('modalNuevoPaciente')">
+        <button class="btn btn-sky" onclick="resetModalPacienteMode(); openModal('modalNuevoPaciente')">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Nuevo Paciente
         </button>
@@ -1142,7 +1148,7 @@ tbody tr:last-child td{border-bottom:none;}
         <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:center">
           <div class="search-box" style="max-width:320px">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" placeholder="Buscar nombre, DNI, cobertura..." oninput="filterPacientes(this.value)">
+            <input type="text" placeholder="Buscar nombre, DNI, cobertura..." oninput="window.PacientesMod && window.PacientesMod.filterPacientes(this.value)">
           </div>
           <div style="display:flex;gap:6px;margin-left:auto">
             <button class="btn btn-ghost btn-sm">Todos</button>
@@ -1163,7 +1169,13 @@ tbody tr:last-child td{border-bottom:none;}
     <div class="module" id="mod-hclinica">
       <div class="page-header-row">
         <div><div class="page-title" id="hcl-paciente-nombre">Historia Clínica</div><div class="page-sub" id="hcl-paciente-meta">—</div></div>
-        <button class="btn btn-ghost" onclick="showModule('pacientes',null)">← Volver a Pacientes</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-sky" onclick="editarPacienteActual()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Editar Ficha
+          </button>
+          <button class="btn btn-ghost" onclick="showModule('pacientes',null)">← Volver a Pacientes</button>
+        </div>
       </div>
       <div class="grid-2">
         <div style="display:flex;flex-direction:column;gap:14px">
@@ -1174,6 +1186,13 @@ tbody tr:last-child td{border-bottom:none;}
           <div class="card card-pad">
             <div class="hcl-section-title">Plan de Tratamiento</div>
             <div id="hcl-plan"></div>
+          </div>
+          <div class="card card-pad">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+              <div class="hcl-section-title" style="margin-bottom:0">Autorizaciones de Obra Social</div>
+              <button class="btn btn-sky btn-sm" onclick="openModalNuevaAutorizacion()">+ Nueva</button>
+            </div>
+            <div id="hcl-autorizaciones"></div>
           </div>
         </div>
         <div class="card card-pad">
@@ -1205,6 +1224,7 @@ tbody tr:last-child td{border-bottom:none;}
           <div class="hcl-section-title" style="margin-bottom:0">💰 Cuenta Corriente</div>
           <div style="display:flex;gap:8px;align-items:center">
             <span class="badge badge-emerald" id="hcl-saldo-badge">Saldo: $0</span>
+            <button class="btn btn-ghost btn-sm" onclick="cargarConceptoHCL()">+ Cargar Concepto</button>
             <button class="btn btn-sky btn-sm" onclick="registrarPagoHCL()">+ Registrar Pago</button>
           </div>
         </div>
@@ -1223,7 +1243,7 @@ tbody tr:last-child td{border-bottom:none;}
     <div class="module" id="mod-profesionales">
       <div class="page-header-row">
         <div><div class="page-title">Gestión de Profesionales</div><div class="page-sub">6 profesionales activos · Liquidación automática</div></div>
-        <button class="btn btn-violet" onclick="openModal('modalNuevoProf')">
+        <button class="btn btn-violet">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Agregar Profesional
         </button>
@@ -2228,18 +2248,10 @@ Respondé con el número de tu opción 👇</textarea>
       <button class="modal-close" onclick="closeModal('modalNuevoTurno')">×</button>
     </div>
 
-    <!-- PACIENTE + PROFESIONAL (con autocomplete: input + datalist) -->
+    <!-- PACIENTE + PROFESIONAL -->
     <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">Paciente *</label>
-        <input class="form-input" id="turnoPac" list="pacientesList" placeholder="Escribí para buscar..." autocomplete="off" oninput="autoFillCobertura()">
-        <datalist id="pacientesList"></datalist>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Profesional *</label>
-        <input class="form-input" id="turnoProf" list="profesionalesList" placeholder="Escribí para buscar..." autocomplete="off">
-        <datalist id="profesionalesList"></datalist>
-      </div>
+      <div class="form-group"><label class="form-label">Paciente *</label><select class="form-select" id="turnoPac" onchange="autoFillCobertura()"><option value="">Seleccionar...</option><option>Rodrigo Sánchez</option><option>Marcela Fontana</option><option>Tomás Villanueva</option><option>Graciela Molina</option><option>Sebastián Castro</option><option>Ana Belén Torres</option><option>Jorge Navarro</option><option>Patricia Ruiz</option></select></div>
+      <div class="form-group"><label class="form-label">Profesional *</label><select class="form-select" id="turnoProf"><option value="">Seleccionar...</option><option>Dra. Valeria Moreno</option><option>Dr. Matías Herrera</option><option>Lic. Sofía Arcuri</option><option>Dr. Ignacio Ríos</option><option>Dra. Camila Pérez</option><option>Dr. Lucas Bravo</option></select></div>
     </div>
 
     <!-- FECHA + HORA -->
@@ -2311,6 +2323,42 @@ Respondé con el número de tu opción 👇</textarea>
   </div>
 </div>
 
+<!-- ═══ MODAL: NUEVA AUTORIZACIÓN ═══ -->
+<div class="modal-overlay" id="modalNuevaAutorizacion">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div class="modal-title">📋 Nueva Autorización</div>
+      <button class="modal-close" onclick="closeModal('modalNuevaAutorizacion')">×</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Obra Social *</label>
+      <input class="form-input" id="autObraSocial" placeholder="Ej: OSDE 310, Swiss Medical, IOMA...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Prestación *</label>
+      <input class="form-input" id="autPrestacion" placeholder="Ej: Sesiones de kinesiología">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Número de Autorización *</label>
+      <input class="form-input" id="autNumero" placeholder="Ej: AUT-2026-12345">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">Sesiones autorizadas *</label>
+        <input type="number" min="1" class="form-input" id="autSesiones" value="10">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fecha de vencimiento</label>
+        <input type="date" class="form-input" id="autVencimiento">
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-ghost" onclick="closeModal('modalNuevaAutorizacion')">Cancelar</button>
+      <button class="btn btn-sky" onclick="guardarNuevaAutorizacion()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ MODAL: NUEVA EVOLUCION ═══ -->
 <div class="modal-overlay" id="modalNuevaEvolucion">
   <div class="modal">
@@ -2341,56 +2389,11 @@ Respondé con el número de tu opción 👇</textarea>
 </div>
 
 <!-- ═══ MODAL: NUEVO PACIENTE ═══ -->
-<!-- ═══ MODAL: NUEVO PROFESIONAL ═══ -->
-<div class="modal-overlay" id="modalNuevoProf">
-  <div class="modal" style="width:520px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-      <div class="modal-title">👨‍⚕️ Nuevo Profesional</div>
-      <button class="modal-close" onclick="closeModal('modalNuevoProf')">×</button>
-    </div>
-    <div class="form-group"><label class="form-label">Nombre completo *</label><input class="form-input" id="profNombre" placeholder="Dra. Valeria Moreno"></div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Iniciales</label><input class="form-input" id="profIniciales" placeholder="auto (ej: VM)" maxlength="3"></div>
-      <div class="form-group"><label class="form-label">Matrícula *</label><input class="form-input" id="profMatricula" placeholder="MK-4821"></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Especialidad *</label>
-        <select class="form-select" id="profEspecialidad">
-          <option>Kinesiología</option><option>Fisioterapia</option><option>Psicología</option>
-          <option>Traumatología</option><option>Neurología</option><option>Reumatología</option>
-          <option>Pediatría</option><option>Deportología</option><option>Fonoaudiología</option>
-          <option>Terapia Ocupacional</option>
-        </select>
-      </div>
-      <div class="form-group"><label class="form-label">Tipo</label>
-        <select class="form-select" id="profTipo">
-          <option>Full Time</option><option>Part Time</option><option>Freelance</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-group"><label class="form-label">Consultorio asignado</label>
-      <select class="form-select" id="profConsultorio">
-        <option value="">Sin asignar</option>
-        <option value="1">C1 - Kinesiología</option><option value="2">C2 - Fisioterapia</option>
-        <option value="3">C3 - Psicología</option><option value="4">C4 - Traumatología</option>
-        <option value="5">C5 - Neurología</option><option value="6">C6 - Reumatología</option>
-        <option value="7">C7 - Pediatría</option><option value="8">C8 - Deportología</option>
-        <option value="9">C9 - Kinesiología</option><option value="10">C10 - Fisioterapia</option>
-        <option value="11">C11 - Psicología</option><option value="12">C12 - Traumatología</option>
-      </select>
-    </div>
-    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px">
-      <button class="btn btn-ghost" onclick="closeModal('modalNuevoProf')">Cancelar</button>
-      <button class="btn btn-violet" onclick="guardarNuevoProfesional()">Guardar Profesional</button>
-    </div>
-  </div>
-</div>
-
 <div class="modal-overlay" id="modalNuevoPaciente">
   <div class="modal" style="width:680px;max-height:90vh;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;position:sticky;top:-28px;background:var(--bg3);padding:12px 0;z-index:1">
-      <div class="modal-title">+ Nuevo Paciente — Ficha Completa</div>
-      <button class="modal-close" onclick="closeModal('modalNuevoPaciente')">×</button>
+      <div class="modal-title" id="modalPacienteTitle">+ Nuevo Paciente — Ficha Completa</div>
+      <button class="modal-close" onclick="closeModal('modalNuevoPaciente'); resetModalPacienteMode()">×</button>
     </div>
 
     <!-- SECCIÓN 1: DATOS PERSONALES -->
@@ -2513,9 +2516,9 @@ Respondé con el número de tu opción 👇</textarea>
     </div>
 
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:10px;position:sticky;bottom:-28px;background:var(--bg3);padding:12px 0;border-top:1px solid var(--border)">
-      <button class="btn btn-ghost" onclick="closeModal('modalNuevoPaciente')">Cancelar</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalNuevoPaciente'); resetModalPacienteMode()">Cancelar</button>
       <button class="btn btn-ghost" onclick="showToast('🖨️ Formulario enviado a impresión')">Imprimir Ficha</button>
-      <button class="btn btn-sky" onclick="guardarNuevoPaciente()">Guardar Paciente</button>
+      <button class="btn btn-sky" id="btnGuardarPaciente" onclick="guardarPacienteDispatch()">Guardar Paciente</button>
     </div>
   </div>
 </div>
@@ -2682,18 +2685,31 @@ Respondé con el número de tu opción 👇</textarea>
   </div>
 </div>
 
+<!-- MODAL CONFIRMACIÓN GENÉRICA -->
+<div class="modal-overlay" id="modalConfirmAction" onclick="if(event.target===this) closeModal('modalConfirmAction')">
+  <div class="modal" style="max-width:400px;text-align:center;padding:30px 20px">
+    <div id="confirmIcon" style="font-size:48px;margin-bottom:16px">⚠️</div>
+    <div id="confirmTitle" style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:8px">¿Confirmar Acción?</div>
+    <div id="confirmDesc" style="font-size:13px;color:var(--text3);margin-bottom:24px;line-height:1.5">Esta acción no se puede deshacer.</div>
+    <div style="display:flex;gap:12px;justify-content:center">
+      <button class="btn btn-ghost" onclick="closeModal('modalConfirmAction')" style="flex:1">Cancelar</button>
+      <button class="btn btn-sky" id="confirmBtnAction" style="flex:1">Confirmar</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ═══════════════════════════════════════════════════════
-//  AUTH — migrado a /src/auth.js (Supabase)
-//  doLogin, doLogout y applyRolePermissions los expone src/main.js
-//  como window.doLogin, window.doLogout (para onclick/onsubmit legacy).
+//  AUTH — Migrado a src/auth.js (Supabase Auth + RLS)
 // ═══════════════════════════════════════════════════════
+// doLogin, doLogout, applyRolePermissions ahora viven en
+// src/auth.js y se exponen como window.doLogin / window.doLogout
+// desde src/main.js. No tocar acá.
 
 // ═══════════════════════════════════════════════════════
 //  DATA
 // ═══════════════════════════════════════════════════════
-// Demo data — src/legacy-bridge.js la reemplaza con datos reales de Supabase al login
-window.CONSULTORIOS_DATA = window.CONSULTORIOS_DATA || [
+let CONSULTORIOS_DATA = [
   {id:1,esp:"Kinesiología",estado:"ocupado",prof:"Dra. Moreno",pac:"Rodrigo Sánchez"},
   {id:2,esp:"Fisioterapia",estado:"ocupado",prof:"Dr. Herrera",pac:"Ana Torres"},
   {id:3,esp:"Psicología",estado:"libre",prof:"Lic. Arcuri",pac:"—"},
@@ -2708,42 +2724,15 @@ window.CONSULTORIOS_DATA = window.CONSULTORIOS_DATA || [
   {id:12,esp:"Traumatología",estado:"limpieza",prof:"—",pac:"—"},
 ];
 
-// Demo data — src/legacy-bridge.js la reemplaza con datos reales de Supabase al login
-window.AGENDA_DATA = window.AGENDA_DATA || [
-  {fecha:"Hoy",rango:"hoy",hora:"08:00",pac:"Rodrigo Sánchez",prof:"Dra. Moreno",c:1,esp:"Kinesiología",tipo:"Presencial",estado:"Confirmado"},
-  {fecha:"Hoy",rango:"hoy",hora:"08:30",pac:"Ana Torres",prof:"Dr. Herrera",c:2,esp:"Fisioterapia",tipo:"Presencial",estado:"Confirmado"},
-  {fecha:"Hoy",rango:"hoy",hora:"09:00",pac:"Tomás Villanueva",prof:"Dra. Moreno",c:1,esp:"Kinesiología",tipo:"Presencial",estado:"Pendiente"},
-  {fecha:"Hoy",rango:"hoy",hora:"09:00",pac:"Graciela Molina",prof:"Dra. Pérez",c:5,esp:"Neurología",tipo:"Presencial",estado:"Confirmado"},
-  {fecha:"Hoy",rango:"hoy",hora:"09:30",pac:"Sebastián Castro",prof:"Dr. Ríos",c:4,esp:"Traumatología",tipo:"Presencial",estado:"No Show"},
-  {fecha:"Hoy",rango:"hoy",hora:"10:00",pac:"Marcela Fontana",prof:"Dra. Moreno",c:1,esp:"Kinesiología",tipo:"Presencial",estado:"En curso"},
-  {fecha:"Hoy",rango:"hoy",hora:"10:30",pac:"Carlos Méndez",prof:"Dr. Herrera",c:2,esp:"Fisioterapia",tipo:"Virtual",estado:"Confirmado"},
-  {fecha:"Hoy",rango:"hoy",hora:"11:00",pac:"Laura Stein",prof:"Lic. Arcuri",c:3,esp:"Psicología",tipo:"Presencial",estado:"Confirmado"},
-  {fecha:"Hoy",rango:"hoy",hora:"11:30",pac:"Martín Gutiérrez",prof:"Dra. Pérez",c:5,esp:"Neurología",tipo:"Presencial",estado:"Lista espera"},
-  {fecha:"Hoy",rango:"hoy",hora:"12:00",pac:"Flavia Ortega",prof:"Dr. Ríos",c:4,esp:"Traumatología",tipo:"Presencial",estado:"Confirmado"},
-  {fecha:"Hoy",rango:"hoy",hora:"13:00",pac:"Silvia Gómez",prof:"Lic. Pinto",c:9,esp:"Kinesiología",tipo:"Presencial",estado:"Confirmado"},
-  {fecha:"Hoy",rango:"hoy",hora:"14:00",pac:"Jorge Navarro",prof:"Dr. Bravo",c:8,esp:"Deportología",tipo:"Presencial",estado:"Confirmado"},
-  {fecha:"Hoy",rango:"hoy",hora:"15:00",pac:"Patricia Ruiz",prof:"Dra. Moreno",c:1,esp:"Kinesiología",tipo:"Virtual",estado:"Pendiente"},
-  {fecha:"Hoy",rango:"hoy",hora:"16:00",pac:"Elena Castro",prof:"Lic. Arcuri",c:3,esp:"Psicología",tipo:"Presencial",estado:"Confirmado"},
-  {fecha:"Mañana",rango:"semana",hora:"09:00",pac:"Luis Heredia",prof:"Dra. Vidal",c:11,esp:"Psicología",tipo:"Virtual",estado:"Confirmado"},
-  {fecha:"Este Viernes",rango:"semana",hora:"10:30",pac:"Marcos Silva",prof:"Lic. Arcuri",c:3,esp:"Psicología",tipo:"Presencial",estado:"Pendiente"},
-  {fecha:"28/03/2025",rango:"mes",hora:"11:00",pac:"Fernando Torres",prof:"Dra. Moreno",c:1,esp:"Kinesiología",tipo:"Presencial",estado:"Pendiente"},
-  {fecha:"04/04/2025",rango:"mes",hora:"16:00",pac:"María Domínguez",prof:"Dr. Herrera",c:2,esp:"Fisioterapia",tipo:"Presencial",estado:"Confirmado"}
-];
+// AGENDA_DATA — se carga desde Supabase via src/agenda.js (cargarAgenda + Realtime)
+// Se mantiene como variable global vacía para compatibilidad con código legacy del HTML
+let AGENDA_DATA = [];
 
-// Demo data — src/legacy-bridge.js reemplaza con datos reales de Supabase al login
-window.PACIENTES_DATA = window.PACIENTES_DATA || [
-  {id:1,ref:'PAC-2025-0001',nombre:"Rodrigo Sánchez",dni:"31.445.892",cob:"OSDE 310",diag:"Rotura LCA post-quirúrgico",ses:24,prox:"Hoy 10:30",est:"Activo",score:98,deuda:0},
-  {id:2,ref:'PAC-2025-0002',nombre:"Marcela Fontana",dni:"27.112.445",cob:"Swiss Medical",diag:"Cervicalgia crónica",ses:8,prox:"Hoy 11:00",est:"Activo",score:87,deuda:4200},
-  {id:3,ref:'PAC-2025-0003',nombre:"Tomás Villanueva",dni:"40.228.113",cob:"Particular",diag:"Lumbalgia aguda",ses:3,prox:"Mañana 09:00",est:"Nuevo",score:100,deuda:0},
-  {id:4,ref:'PAC-2025-0004',nombre:"Graciela Molina",dni:"22.789.334",cob:"Galeno",diag:"Parkinson estadio II",ses:52,prox:"Vie 14:00",est:"Activo",score:95,deuda:0},
-  {id:5,ref:'PAC-2025-0005',nombre:"Sebastián Castro",dni:"35.001.778",cob:"Medifé",diag:"Fractura húmero derecho",ses:12,prox:"—",est:"Inactivo",score:62,deuda:8600},
-  {id:6,ref:'PAC-2025-0006',nombre:"Ana Belén Torres",dni:"38.445.221",cob:"IOMA",diag:"Esguince tobillo grado III",ses:6,prox:"Lun 16:30",est:"Activo",score:100,deuda:0},
-  {id:7,ref:'PAC-2025-0007',nombre:"Jorge Navarro",dni:"29.334.567",cob:"OSDE 210",diag:"Epicondilitis bilateral",ses:9,prox:"Hoy 14:00",est:"Activo",score:92,deuda:0},
-  {id:8,ref:'PAC-2025-0008',nombre:"Patricia Ruiz",dni:"33.881.002",cob:"Swiss Medical",diag:"Síndrome de túnel carpiano",ses:5,prox:"Hoy 15:00",est:"Nuevo",score:100,deuda:0},
-];
+// PACIENTES_DATA — se carga desde Supabase via src/pacientes.js (cargarPacientes + Realtime)
+// El módulo mantiene window.PACIENTES_DATA sincronizado con la cache.
+let PACIENTES_DATA = [];
 
-// Demo data — src/legacy-bridge.js reemplaza con datos reales de Supabase al login
-window.PROFESIONALES_DATA = window.PROFESIONALES_DATA || [
+let PROFESIONALES_DATA = [
   {id:1,ref:'PRO-2025-0001',nombre:"Dra. Valeria Moreno",av:"VM",esp:"Kinesiología",mat:"MK-4821",tipo:"Full Time",c:1,turnos:142,fact:285400,ns:4.2},
   {id:2,ref:'PRO-2025-0002',nombre:"Dr. Matías Herrera",av:"MH",esp:"Fisioterapia",mat:"FT-2934",tipo:"Full Time",c:2,turnos:118,fact:236000,ns:7.1},
   {id:3,ref:'PRO-2025-0003',nombre:"Lic. Sofía Arcuri",av:"SA",esp:"Psicología",mat:"PS-1102",tipo:"Part Time",c:3,turnos:76,fact:190000,ns:3.9},
@@ -3952,13 +3941,11 @@ function renderScheduleGrid() {
 function renderPacientes(data) {
   const tb = document.getElementById('pacientesTbody');
   if(!tb) return;
-  // Fallback: si se llama sin argumentos, usar PACIENTES_DATA actual
-  if (!Array.isArray(data)) data = window.PACIENTES_DATA || [];
   tb.innerHTML = data.map(p => {
     const scoreColor = p.score > 90 ? 'var(--emerald)' : p.score > 70 ? 'var(--amber)' : 'var(--rose)';
     const scorePct = p.score + '%';
     return `
-    <tr data-pac-id="${p.id}" title="Click derecho para más opciones">
+    <tr>
       <td><div style="display:flex;align-items:center;gap:10px">
         <div class="avatar avatar-sm">${p.nombre.split(' ').map(w=>w[0]).slice(0,2).join('')}</div>
         <div><span style="font-weight:700;color:var(--text)">${p.nombre}</span><div style="font-size:10px;color:var(--text4);font-family:var(--mono)">${p.ref}</div></div>
@@ -3976,15 +3963,7 @@ function renderPacientes(data) {
         </div>
       </td>
       <td style="font-weight:700;color:${p.deuda>0?'var(--rose)':'var(--emerald)'}">${p.deuda>0?'$'+p.deuda.toLocaleString('es-AR'):'Al día'}</td>
-      <td>
-        <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
-          <button class="btn btn-sm" onclick="showHCL('${p.id}')" title="Ver historia clínica" style="background:rgba(3,105,161,0.1);color:var(--sky);border:1px solid rgba(3,105,161,0.25);font-size:10px;padding:5px 9px">HC</button>
-          <button class="btn btn-sm" data-pac-action="agendar" data-pac-id-action="${p.id}" title="Crear nuevo turno para este paciente" style="background:rgba(124,58,237,0.1);color:var(--violet);border:1px solid rgba(124,58,237,0.25);font-size:10px;padding:5px 9px">Turno</button>
-          <button class="btn btn-sm" data-pac-action="ctacte"   data-pac-id-action="${p.id}" title="Ver cuenta corriente" style="background:rgba(217,119,6,0.1);color:var(--amber);border:1px solid rgba(217,119,6,0.25);font-size:10px;padding:5px 9px">Cta Cte</button>
-          <button class="btn btn-sm" data-pac-action="whatsapp" data-pac-id-action="${p.id}" title="Enviar WhatsApp" style="background:rgba(5,150,105,0.1);color:var(--emerald);border:1px solid rgba(5,150,105,0.25);font-size:10px;padding:5px 9px">WhatsApp</button>
-          <button class="btn btn-sm" data-pac-action="menu"     data-pac-id-action="${p.id}" title="Más opciones (ver historial, próximos turnos, editar, dar de alta)" style="background:rgba(0,0,0,0.05);color:var(--text2);border:1px solid var(--border);font-size:12px;padding:5px 9px;font-weight:900">⋮</button>
-        </div>
-      </td>
+      <td><button class="btn btn-ghost btn-sm" onclick="showHCL(${p.id})">Ver HCl</button></td>
     </tr>`;
   }).join('');
 }
@@ -4047,37 +4026,45 @@ function showHCL(id) {
 function renderTurnosPaciente(nombre) {
   const tb = document.getElementById('hcl-turnos');
   if(!tb) return;
-  
-  let turnos = AGENDA_DATA.filter(t => t.pac === nombre).map(t => ({...t, fecha: "Hoy"}));
-  let noshows = NOSHOW_DATA.filter(t => t.pac === nombre).map(t => ({
-    hora: t.hora, pac: t.pac, prof: t.prof, esp: "S/D", tipo: "Presencial", estado: "No Show", fecha: "Hoy"
-  }));
-  
-  let allTurnos = turnos.concat(noshows);
-  
-  // Agregar historial simulado para mostrar toda la variedad de estados
-  allTurnos.push({ fecha: "Próxima Semana", hora: "09:00", prof: "Profesor Asignado", esp: "Kinesiología", tipo: "Presencial", estado: "Pendiente" });
-  allTurnos.push({ fecha: "Ayer", hora: "14:00", prof: "Profesor Asignado", esp: "Kinesiología", tipo: "Presencial", estado: "Reprogramado" });
-  allTurnos.push({ fecha: "Hace 1 semana", hora: "10:30", prof: "Profesor Asignado", esp: "Kinesiología", tipo: "Presencial", estado: "Confirmado" });
-  allTurnos.push({ fecha: "Hace 2 semanas", hora: "11:00", prof: "Profesor Asignado", esp: "Kinesiología", tipo: "Presencial", estado: "Cancelado" });
-  allTurnos.push({ fecha: "Hace 3 semanas", hora: "09:30", prof: "Profesor Asignado", esp: "Kinesiología", tipo: "Presencial", estado: "No Show" });
 
-  // Mejorar el historial tomando datos reales del paciente
-  const realProf = allTurnos.find(t => t.prof !== "Profesor Asignado")?.prof || "Dra. Moreno";
-  const realEsp = allTurnos.find(t => t.esp !== "Kinesiología" && t.esp !== "S/D")?.esp || "Kinesiología";
-  
-  allTurnos = allTurnos.map(t => {
-    if(t.prof === "Profesor Asignado") t.prof = realProf;
-    if(t.esp === "Kinesiología" || t.esp === "S/D") t.esp = realEsp;
-    return t;
-  });
+  // Turnos reales del paciente: agenda actual + histórico archivado + no-shows
+  const vigentes = AGENDA_DATA.filter(t => t.pac === nombre);
+  const historicos = (typeof TURNOS_HISTORICOS !== 'undefined' ? TURNOS_HISTORICOS : []).filter(t => t.pac === nombre);
+  const noshows = NOSHOW_DATA.filter(t => t.pac === nombre).map(t => ({
+    hora: t.hora, pac: t.pac, prof: t.prof, esp: t.esp || 'S/D', tipo: 'Presencial', estado: 'No Show', fecha: t.fecha || 'Hoy'
+  }));
+
+  // Dedup noshows ya presentes en vigentes (mismo hora+pac)
+  const vigenteKeys = new Set(vigentes.map(t => `${t.hora}|${t.pac}`));
+  const allTurnos = vigentes.concat(historicos, noshows.filter(n => !vigenteKeys.has(`${n.hora}|${n.pac}`)));
+
+  if(allTurnos.length === 0){
+    tb.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text4);padding:24px">
+      <div style="font-size:24px;margin-bottom:6px">📅</div>
+      <div style="font-size:13px;font-weight:600;color:var(--text3)">Sin turnos registrados</div>
+      <div style="font-size:11px;margin-top:4px">Creá un turno desde el botón superior</div>
+    </td></tr>`;
+    return;
+  }
+
+  // Ordenar: más recientes / futuros primero (los que tienen fecha "Hoy" o futuro arriba)
+  const rankFecha = (f) => {
+    const s = String(f || '').toLowerCase();
+    if(s.includes('próx') || s.includes('prox') || s.includes('mañana')) return 0;
+    if(s === 'hoy') return 1;
+    if(s.includes('ayer')) return 2;
+    if(s.includes('semana')) return 3;
+    if(s.includes('mes')) return 4;
+    return 5;
+  };
+  allTurnos.sort((a,b) => rankFecha(a.fecha) - rankFecha(b.fecha) || String(a.hora||'').localeCompare(String(b.hora||'')));
 
   tb.innerHTML = allTurnos.map(t => `
     <tr>
-      <td><div style="font-weight:600;color:var(--text)">${t.fecha}</div><div style="font-size:10px;color:var(--text4)">${t.hora}</div></td>
-      <td>${t.prof}</td>
-      <td style="font-size:12px;color:var(--text3)">${t.esp}</td>
-      <td><span class="badge ${badgeClass(t.tipo)}" style="font-size:10px">${t.tipo}</span></td>
+      <td><div style="font-weight:600;color:var(--text)">${t.fecha || '—'}</div><div style="font-size:10px;color:var(--text4)">${t.hora || ''}</div></td>
+      <td>${t.prof || '—'}</td>
+      <td style="font-size:12px;color:var(--text3)">${t.esp || '—'}</td>
+      <td><span class="badge ${badgeClass(t.tipo || 'Presencial')}" style="font-size:10px">${t.tipo || 'Presencial'}</span></td>
       <td><span class="badge ${badgeClass(t.estado)}" style="font-size:10px">${t.estado}</span></td>
     </tr>
   `).join('');
@@ -4139,9 +4126,9 @@ function renderProfesionales() {
   g.innerHTML = PROFESIONALES_DATA.map((p,i) => {
     const pct = Math.round((p.turnos/150)*100);
     const nsColor = p.ns > 8 ? 'var(--rose)' : p.ns > 5 ? 'var(--amber)' : 'var(--emerald)';
-    const [c1,c2] = gradients[i % gradients.length];
+    const [c1,c2] = gradients[i];
     return `
-    <div class="prof-card" data-prof-id="${p.id}" title="Doble click / click derecho para más opciones">
+    <div class="prof-card">
       <div class="prof-header">
         <div class="avatar avatar-md" style="background:linear-gradient(135deg,${c1},${c2})">${p.av}</div>
         <div class="prof-info" style="flex:1">
@@ -4162,8 +4149,8 @@ function renderProfesionales() {
         <span style="font-size:11px;color:var(--text3)">${pct}% cap.</span>
       </div>
       <div style="display:flex;gap:8px">
-        <button class="btn btn-emerald btn-sm" style="flex:1;justify-content:center" data-prof-action="ver-agenda" data-prof-id-action="${p.id}">Ver Agenda</button>
-        <button class="btn btn-sky btn-sm" style="flex:1;justify-content:center" data-prof-action="liquidar" data-prof-id-action="${p.id}">Liquidar</button>
+        <button class="btn btn-emerald btn-sm" style="flex:1;justify-content:center" onclick="showToast('Agenda de ${p.nombre} cargada')">Ver Agenda</button>
+        <button class="btn btn-sky btn-sm" style="flex:1;justify-content:center" onclick="showToast('Liquidación de ${p.nombre}: $${(p.fact*0.4/1000).toFixed(0)}K generada')">Liquidar</button>
       </div>
     </div>`;
   }).join('');
@@ -4699,6 +4686,7 @@ function addStockEntry(){
 // (Declaradas aquí para que _DB_STORES pueda referenciarlas correctamente)
 let COLA_FACTURACION = [];
 let CUENTAS_CORRIENTES = {}; // { pacienteId: [{fecha,concepto,tipo,monto}] }
+let TURNOS_HISTORICOS = [];  // Turnos archivados (finalizados/cancelados/reprogramados) con fecha real
 
 const TARIFAS_ESP = {
   'Kinesiología':8400,'Fisioterapia':7800,'Psicología':7200,
@@ -4843,6 +4831,7 @@ const _DB_STORES = {
   rehabmed_profesionales:() => PROFESIONALES_DATA,
   rehabmed_consultorios:() => CONSULTORIOS_DATA,
   rehabmed_noshow:      () => NOSHOW_DATA,
+  rehabmed_turnos_hist: () => TURNOS_HISTORICOS,
   rehabmed_ct_facturas: () => CT_FACTURAS,
   rehabmed_ct_debitos:  () => CT_DEBITOS,
   rehabmed_ct_reclamos: () => CT_RECLAMOS,
@@ -4917,6 +4906,7 @@ function loadFromLocal(){
     loadArray('rehabmed_profesionales', PROFESIONALES_DATA);
     loadArray('rehabmed_consultorios', CONSULTORIOS_DATA);
     loadArray('rehabmed_noshow', NOSHOW_DATA);
+    loadArray('rehabmed_turnos_hist', TURNOS_HISTORICOS);
     loadArray('rehabmed_ct_facturas', CT_FACTURAS);
     loadArray('rehabmed_ct_debitos', CT_DEBITOS);
     loadArray('rehabmed_ct_reclamos', CT_RECLAMOS);
@@ -5709,27 +5699,7 @@ function renderCtaCte(pacId){
   const tb = document.getElementById('hcl-ctacte');
   const badge = document.getElementById('hcl-saldo-badge');
   if(!tb) return;
-  
-  const movs = CUENTAS_CORRIENTES[pacId] || [];
-  const pac = PACIENTES_DATA.find(p => p.id === pacId);
-  
-  // Add sample data if empty (for demo)
-  if(movs.length === 0 && pac){
-    const sample = [
-      {fecha:'01/03/2025',concepto:`Sesión Kinesiología · Dra. Moreno`,tipo:'Cargo',monto:8400},
-      {fecha:'01/03/2025',concepto:'Pago Transferencia',tipo:'Pago',monto:-8400},
-      {fecha:'08/03/2025',concepto:`Sesión Kinesiología · Dra. Moreno`,tipo:'Cargo',monto:8400},
-      {fecha:'08/03/2025',concepto:'Pago OSDE',tipo:'Pago',monto:-8400},
-      {fecha:'15/03/2025',concepto:`Sesión Kinesiología · Dra. Moreno`,tipo:'Cargo',monto:8400},
-    ];
-    if(pac.deuda > 0){
-      sample.push({fecha:'18/03/2025',concepto:`Sesión Kinesiología`,tipo:'Cargo',monto:pac.deuda});
-    } else {
-      sample.push({fecha:'15/03/2025',concepto:'Pago Efectivo',tipo:'Pago',monto:-8400});
-    }
-    CUENTAS_CORRIENTES[pacId] = sample;
-  }
-  
+
   const allMovs = CUENTAS_CORRIENTES[pacId] || [];
   let saldo = 0;
   const rows = allMovs.map(m => {
@@ -5745,12 +5715,17 @@ function renderCtaCte(pacId){
       <td style="font-weight:700;color:${saldoColor}">$${saldo.toLocaleString('es-AR')}</td>
     </tr>`;
   });
-  
-  tb.innerHTML = rows.join('');
+
   if(rows.length === 0){
-    tb.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text4);padding:16px">Sin movimientos</td></tr>';
+    tb.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text4);padding:24px">
+      <div style="font-size:24px;margin-bottom:6px">💰</div>
+      <div style="font-size:13px;font-weight:600;color:var(--text3)">Sin movimientos en cuenta corriente</div>
+      <div style="font-size:11px;margin-top:4px">Registrá un pago o cargá un concepto con los botones superiores</div>
+    </td></tr>`;
+  } else {
+    tb.innerHTML = rows.join('');
   }
-  
+
   if(badge){
     const badgeClass = saldo > 0 ? 'badge-rose' : 'badge-emerald';
     badge.className = `badge ${badgeClass}`;
@@ -5763,10 +5738,10 @@ function registrarPagoHCL(){
   if(!_currentHCLPacId) return;
   const pac = PACIENTES_DATA.find(p => p.id === _currentHCLPacId);
   if(!pac) return;
-  
+
   const monto = prompt(`Registrar pago para ${pac.nombre}\nDeuda actual: $${(pac.deuda||0).toLocaleString('es-AR')}\n\nMonto del pago:`);
   if(!monto || isNaN(parseFloat(monto))) return;
-  
+
   const montoNum = parseFloat(monto);
   if(!CUENTAS_CORRIENTES[pac.id]) CUENTAS_CORRIENTES[pac.id] = [];
   CUENTAS_CORRIENTES[pac.id].push({
@@ -5780,6 +5755,35 @@ function registrarPagoHCL(){
   renderPacientes(PACIENTES_DATA);
   saveToLocal();
   showToast(`✅ Pago de $${montoNum.toLocaleString('es-AR')} registrado para ${pac.nombre}`);
+}
+
+function cargarConceptoHCL(){
+  if(!_currentHCLPacId) return;
+  const pac = PACIENTES_DATA.find(p => p.id === _currentHCLPacId);
+  if(!pac) return;
+
+  const concepto = prompt(`Cargar concepto para ${pac.nombre}\n\nEj: "Sesión Kinesiología · Dra. Moreno"`);
+  if(!concepto || !concepto.trim()) return;
+
+  const monto = prompt(`Monto del cargo (positivo, se sumará a la deuda):`);
+  const montoNum = parseFloat(monto);
+  if(!monto || isNaN(montoNum) || montoNum <= 0){
+    showToast('⚠️ Monto inválido');
+    return;
+  }
+
+  if(!CUENTAS_CORRIENTES[pac.id]) CUENTAS_CORRIENTES[pac.id] = [];
+  CUENTAS_CORRIENTES[pac.id].push({
+    fecha: new Date().toLocaleDateString('es-AR'),
+    concepto: concepto.trim(),
+    tipo: 'Cargo',
+    monto: montoNum
+  });
+  pac.deuda = (pac.deuda || 0) + montoNum;
+  renderCtaCte(pac.id);
+  renderPacientes(PACIENTES_DATA);
+  saveToLocal();
+  showToast(`✅ Cargo de $${montoNum.toLocaleString('es-AR')} asentado para ${pac.nombre}`);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -5924,12 +5928,176 @@ function guardarNuevoPaciente(){
   renderPacientes(PACIENTES_DATA);
   updateDashboardKPIs();
   saveToLocal();
-  
+
   // Clear form
   document.getElementById('pacNombre').value = '';
   document.getElementById('pacApellido').value = '';
   document.getElementById('pacDNI').value = '';
   document.getElementById('pacDiag').value = '';
+
+  if(typeof resetModalPacienteMode === 'function') resetModalPacienteMode();
+}
+
+// ═══════════════════════════════════════════════════════
+//  EDITAR FICHA DE PACIENTE (reusa modalNuevoPaciente)
+// ═══════════════════════════════════════════════════════
+let _editandoPacienteId = null;
+
+function editarPacienteActual(){
+  if(!_currentHCLPacId){ showToast('⚠️ No hay paciente seleccionado'); return; }
+  editarPaciente(_currentHCLPacId);
+}
+
+function editarPaciente(id){
+  const p = PACIENTES_DATA.find(x => x.id === id);
+  if(!p){ showToast('⚠️ Paciente no encontrado'); return; }
+
+  _editandoPacienteId = id;
+
+  // Pre-llenar el formulario con datos actuales
+  const nombreCompleto = (p.nombre || '').trim().split(' ');
+  const nombre = nombreCompleto.slice(0, Math.max(1, nombreCompleto.length - 1)).join(' ');
+  const apellido = nombreCompleto.length > 1 ? nombreCompleto[nombreCompleto.length - 1] : '';
+
+  const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val ?? ''; };
+
+  setVal('pacNombre', p._nombreOnly ?? nombre);
+  setVal('pacApellido', p._apellidoOnly ?? apellido);
+  setVal('pacDNI', p.dni);
+  setVal('pacFechaNac', p.fechaNac);
+  setVal('pacGenero', p.genero);
+  setVal('pacEstCivil', p.estCivil);
+  setVal('pacTel', p.tel);
+  setVal('pacTel2', p.tel2);
+  setVal('pacEmail', p.email);
+  setVal('pacDir', p.dir);
+  setVal('pacOcupacion', p.ocupacion);
+  setVal('pacNacionalidad', p.nacionalidad || 'Argentina');
+  setVal('pacCob', p.cob);
+  setVal('pacAfiliado', p.afiliado);
+  setVal('pacPlan', p.plan);
+  setVal('pacVigencia', p.vigencia);
+  setVal('pacDiag', p.diag);
+  setVal('pacDiag2', p.diag2);
+  setVal('pacEsp', p.esp);
+  setVal('pacMedDer', p.medDer);
+  setVal('pacMedMat', p.medMat);
+  setVal('pacSesiones', p.ses);
+  setVal('pacSangre', p.sangre);
+  setVal('pacPesoAltura', p.pesoAltura);
+  setVal('pacAlergias', p.alergias);
+  setVal('pacMedicacion', p.medicacion);
+  setVal('pacCirugias', p.cirugias);
+  setVal('pacCronicas', p.cronicas);
+  setVal('pacImplante', p.implante);
+  setVal('pacEmbarazo', p.embarazo);
+  setVal('pacAuth', p.auth);
+  setVal('pacAuthFecha', p.authFecha);
+  setVal('pacAuthVenc', p.authVenc);
+  setVal('pacAuthEst', p.authEst);
+  setVal('pacEmergNombre', p.emergNombre);
+  setVal('pacEmergRel', p.emergRel);
+  setVal('pacEmergTel', p.emergTel);
+  setVal('pacEmergTel2', p.emergTel2);
+  setVal('pacEmergDir', p.emergDir);
+  setVal('pacObs', p.obs);
+  setVal('pacMotivo', p.motivo);
+
+  // Cambiar título y botón a modo edición
+  const title = document.getElementById('modalPacienteTitle');
+  const btn   = document.getElementById('btnGuardarPaciente');
+  if(title) title.textContent = `✏️ Editar Paciente — ${p.ref || ''}`;
+  if(btn)   btn.textContent   = 'Guardar Cambios';
+
+  openModal('modalNuevoPaciente');
+}
+
+function guardarPacienteDispatch(){
+  if(_editandoPacienteId){
+    guardarEdicionPaciente();
+  } else {
+    guardarNuevoPaciente();
+  }
+}
+
+function guardarEdicionPaciente(){
+  const id = _editandoPacienteId;
+  const p = PACIENTES_DATA.find(x => x.id === id);
+  if(!p){ showToast('⚠️ Paciente no encontrado'); return; }
+
+  const getVal = (id) => { const el = document.getElementById(id); return el ? el.value : ''; };
+
+  const nombre = getVal('pacNombre').trim();
+  const apellido = getVal('pacApellido').trim();
+  if(!nombre || !apellido){
+    showToast('⚠️ Nombre y Apellido son obligatorios');
+    return;
+  }
+
+  // Actualizar campos visibles en la tabla y HCl
+  p.nombre      = nombre + ' ' + apellido;
+  p._nombreOnly = nombre;
+  p._apellidoOnly = apellido;
+  p.dni         = getVal('pacDNI') || p.dni;
+  p.cob         = getVal('pacCob') || p.cob;
+  p.diag        = getVal('pacDiag') || getVal('pacMotivo') || p.diag;
+  const sesiones = parseInt(getVal('pacSesiones'));
+  if(!isNaN(sesiones)) p.ses = sesiones;
+
+  // Campos extendidos
+  p.fechaNac     = getVal('pacFechaNac');
+  p.genero       = getVal('pacGenero');
+  p.estCivil     = getVal('pacEstCivil');
+  p.tel          = getVal('pacTel');
+  p.tel2         = getVal('pacTel2');
+  p.email        = getVal('pacEmail');
+  p.dir          = getVal('pacDir');
+  p.ocupacion    = getVal('pacOcupacion');
+  p.nacionalidad = getVal('pacNacionalidad');
+  p.afiliado     = getVal('pacAfiliado');
+  p.plan         = getVal('pacPlan');
+  p.vigencia     = getVal('pacVigencia');
+  p.diag2        = getVal('pacDiag2');
+  p.esp          = getVal('pacEsp');
+  p.medDer       = getVal('pacMedDer');
+  p.medMat       = getVal('pacMedMat');
+  p.sangre       = getVal('pacSangre');
+  p.pesoAltura   = getVal('pacPesoAltura');
+  p.alergias     = getVal('pacAlergias');
+  p.medicacion   = getVal('pacMedicacion');
+  p.cirugias     = getVal('pacCirugias');
+  p.cronicas     = getVal('pacCronicas');
+  p.implante     = getVal('pacImplante');
+  p.embarazo     = getVal('pacEmbarazo');
+  p.auth         = getVal('pacAuth');
+  p.authFecha    = getVal('pacAuthFecha');
+  p.authVenc     = getVal('pacAuthVenc');
+  p.authEst      = getVal('pacAuthEst');
+  p.emergNombre  = getVal('pacEmergNombre');
+  p.emergRel     = getVal('pacEmergRel');
+  p.emergTel     = getVal('pacEmergTel');
+  p.emergTel2    = getVal('pacEmergTel2');
+  p.emergDir     = getVal('pacEmergDir');
+  p.obs          = getVal('pacObs');
+  p.motivo       = getVal('pacMotivo');
+
+  saveToLocal();
+  closeModal('modalNuevoPaciente');
+  showToast(`✅ Ficha actualizada: ${p.nombre}`);
+
+  // Re-render tabla y HCl si está abierto
+  renderPacientes(PACIENTES_DATA);
+  if(_currentHCLPacId === id) showHCL(id);
+
+  resetModalPacienteMode();
+}
+
+function resetModalPacienteMode(){
+  _editandoPacienteId = null;
+  const title = document.getElementById('modalPacienteTitle');
+  const btn   = document.getElementById('btnGuardarPaciente');
+  if(title) title.textContent = '+ Nuevo Paciente — Ficha Completa';
+  if(btn)   btn.textContent   = 'Guardar Paciente';
 }
 
 // ═══════════════════════════════════════════════════════
