@@ -693,8 +693,10 @@ export function instalarContextMenuPacientes() {
       ev.stopPropagation();
       const action = btnProf.getAttribute('data-prof-action');
       const profId = btnProf.getAttribute('data-prof-id-action');
-      if (action === 'ver-agenda') verAgendaProfesional(profId);
-      else if (action === 'liquidar') generarLiquidacionProf(profId);
+      if (action === 'ver-agenda')        verAgendaProfesional(profId);
+      else if (action === 'liquidar')     generarLiquidacionProf(profId);
+      else if (action === 'horarios')     abrirConfigHorarios(profId);
+      else if (action === 'excepciones')  abrirExcepciones(profId);
       return;
     }
 

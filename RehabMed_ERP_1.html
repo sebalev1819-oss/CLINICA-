@@ -2343,15 +2343,21 @@ Respondé con el número de tu opción 👇</textarea>
 <!-- ═══ MODAL: NUEVO PACIENTE ═══ -->
 <!-- ═══ MODAL: NUEVO PROFESIONAL ═══ -->
 <div class="modal-overlay" id="modalNuevoProf">
-  <div class="modal" style="width:520px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-      <div class="modal-title">👨‍⚕️ Nuevo Profesional</div>
+  <div class="modal" style="width:560px;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;position:sticky;top:-28px;background:var(--bg3);padding:12px 0;z-index:1">
+      <div>
+        <div class="modal-title" style="margin-bottom:2px">👨‍⚕️ Nuevo Profesional</div>
+        <div style="font-size:11px;color:var(--text3);font-weight:500">Solo Nombre, Matrícula y Especialidad son obligatorios. Después de crearlo podés configurar sus horarios.</div>
+      </div>
       <button class="modal-close" onclick="closeModal('modalNuevoProf')">×</button>
     </div>
-    <div class="form-group"><label class="form-label">Nombre completo *</label><input class="form-input" id="profNombre" placeholder="Dra. Valeria Moreno"></div>
+
+    <!-- ╔════════ DATOS BÁSICOS (siempre visible) ════════╗ -->
+    <div style="font-size:11px;font-weight:700;color:var(--violet);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);padding-bottom:8px">👤 Datos Básicos</div>
+    <div class="form-group"><label class="form-label">Nombre completo *</label><input class="form-input" id="profNombre" placeholder="Ej: Dra. Valeria Moreno"></div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Iniciales</label><input class="form-input" id="profIniciales" placeholder="auto (ej: VM)" maxlength="3"></div>
-      <div class="form-group"><label class="form-label">Matrícula *</label><input class="form-input" id="profMatricula" placeholder="MK-4821"></div>
+      <div class="form-group"><label class="form-label">Iniciales</label><input class="form-input" id="profIniciales" placeholder="auto si lo dejás vacío" maxlength="3"></div>
+      <div class="form-group"><label class="form-label">Matrícula *</label><input class="form-input" id="profMatricula" placeholder="MN o MP del profesional"></div>
     </div>
     <div class="form-row">
       <div class="form-group"><label class="form-label">Especialidad *</label>
@@ -2362,13 +2368,13 @@ Respondé con el número de tu opción 👇</textarea>
           <option>Terapia Ocupacional</option>
         </select>
       </div>
-      <div class="form-group"><label class="form-label">Tipo</label>
+      <div class="form-group"><label class="form-label">Tipo de relación</label>
         <select class="form-select" id="profTipo">
           <option>Full Time</option><option>Part Time</option><option>Freelance</option>
         </select>
       </div>
     </div>
-    <div class="form-group"><label class="form-label">Consultorio asignado</label>
+    <div class="form-group"><label class="form-label">Consultorio asignado por defecto</label>
       <select class="form-select" id="profConsultorio">
         <option value="">Sin asignar</option>
         <option value="1">C1 - Kinesiología</option><option value="2">C2 - Fisioterapia</option>
@@ -2379,9 +2385,52 @@ Respondé con el número de tu opción 👇</textarea>
         <option value="11">C11 - Psicología</option><option value="12">C12 - Traumatología</option>
       </select>
     </div>
-    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px">
+
+    <!-- ╔════════ CONTACTO (acordeón abierto) ════════╗ -->
+    <details open style="margin:18px 0 0">
+      <summary style="cursor:pointer;list-style:none;outline:none;font-size:11px;font-weight:700;color:var(--sky);text-transform:uppercase;letter-spacing:0.08em;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:10px">
+        <span>📞 Contacto</span>
+        <span style="margin-left:auto;font-size:13px;color:var(--text4);text-transform:none;letter-spacing:0;font-weight:500">recomendado · click para mostrar/ocultar</span>
+      </summary>
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="profEmail" type="email" placeholder="profesional@correo.com" autocomplete="off"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Teléfono principal</label><input class="form-input" id="profTel" placeholder="+54 11 XXXX-XXXX"></div>
+        <div class="form-group"><label class="form-label">Teléfono alternativo</label><input class="form-input" id="profTel2" placeholder="+54 11 XXXX-XXXX"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Dirección</label><input class="form-input" id="profDir" placeholder="Calle, Número, Localidad"></div>
+    </details>
+
+    <!-- ╔════════ DATOS ADMINISTRATIVOS (acordeón cerrado) ════════╗ -->
+    <details style="margin:0">
+      <summary style="cursor:pointer;list-style:none;outline:none;font-size:11px;font-weight:700;color:var(--emerald);text-transform:uppercase;letter-spacing:0.08em;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);padding-bottom:8px;margin:18px 0 10px">
+        <span>📋 Datos Administrativos</span>
+        <span style="margin-left:auto;font-size:13px;color:var(--text4);text-transform:none;letter-spacing:0;font-weight:500">para liquidaciones · click para expandir</span>
+      </summary>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">DNI / CUIL</label><input class="form-input" id="profDNI" placeholder="Sin puntos: 31445892" inputmode="numeric"></div>
+        <div class="form-group"><label class="form-label">Fecha de Nacimiento</label><input class="form-input" id="profFechaNac" type="date"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Género</label>
+          <select class="form-select" id="profGenero">
+            <option value="">No especifica</option>
+            <option>Masculino</option><option>Femenino</option><option>Otro</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Nacionalidad</label><input class="form-input" id="profNacionalidad" placeholder="Argentina" value="Argentina"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Observaciones</label><textarea class="form-input" id="profObs" rows="2" style="resize:vertical;min-height:50px" placeholder="Notas internas, disponibilidad especial, etc."></textarea></div>
+    </details>
+
+    <!-- Hint sobre horarios -->
+    <div style="background:rgba(124,58,237,0.06);border:1px solid rgba(124,58,237,0.2);border-radius:10px;padding:12px;margin-top:18px;font-size:12px;color:var(--text2);display:flex;gap:10px;align-items:flex-start">
+      <span style="font-size:18px;flex-shrink:0">🕐</span>
+      <span>Después de crear el profesional vas a poder configurar sus <strong>días y horarios de atención</strong> desde la lista, con el botón "Horarios".</span>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px;position:sticky;bottom:-28px;background:var(--bg3);padding:12px 0;border-top:1px solid var(--border)">
       <button class="btn btn-ghost" onclick="closeModal('modalNuevoProf')">Cancelar</button>
-      <button class="btn btn-violet" onclick="guardarNuevoProfesional()">Guardar Profesional</button>
+      <button class="btn btn-violet" onclick="guardarNuevoProfesional()">Crear profesional</button>
     </div>
   </div>
 </div>
@@ -4189,9 +4238,11 @@ function renderProfesionales() {
         <div class="progress-bar"><div class="progress-fill progress-sky" style="width:${pct}%"></div></div>
         <span style="font-size:11px;color:var(--text3)">${pct}% cap.</span>
       </div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-emerald btn-sm" style="flex:1;justify-content:center" data-prof-action="ver-agenda" data-prof-id-action="${p.id}">Ver Agenda</button>
-        <button class="btn btn-sky btn-sm" style="flex:1;justify-content:center" data-prof-action="liquidar" data-prof-id-action="${p.id}">Liquidar</button>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-emerald btn-sm" style="flex:1 1 calc(50% - 3px);justify-content:center;font-size:11px" data-prof-action="ver-agenda" data-prof-id-action="${p.id}">📋 Agenda</button>
+        <button class="btn btn-sky btn-sm" style="flex:1 1 calc(50% - 3px);justify-content:center;font-size:11px" data-prof-action="liquidar" data-prof-id-action="${p.id}">💰 Liquidar</button>
+        <button class="btn btn-violet btn-sm" style="flex:1 1 calc(50% - 3px);justify-content:center;font-size:11px" data-prof-action="horarios" data-prof-id-action="${p.id}" title="Configurar días y franjas de atención">🕐 Horarios</button>
+        <button class="btn btn-amber btn-sm" style="flex:1 1 calc(50% - 3px);justify-content:center;font-size:11px" data-prof-action="excepciones" data-prof-id-action="${p.id}" title="Feriados, vacaciones, ausencias">📆 Excepciones</button>
       </div>
     </div>`;
   }).join('');
