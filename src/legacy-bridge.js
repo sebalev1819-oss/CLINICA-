@@ -523,14 +523,29 @@ async function crearProfesionalUI(datos) {
     datos.nombre.split(' ').filter(w => /^[A-ZÁÉÍÓÚ]/.test(w)).map(w => w[0]).slice(-2).join('') ||
     datos.nombre.slice(0, 2).toUpperCase();
 
-  const { data, error } = await supabase.from('profesionales').insert([{
+  const payload = {
     nombre:         datos.nombre,
     iniciales,
     especialidad:   datos.especialidad,
     matricula:      datos.matricula,
     tipo:           datos.tipo || 'Full Time',
     consultorio_id: datos.consultorioId || null,
-  }]).select().single();
+  };
+
+  // Campos extra (migration 011) — se envían sólo si están definidos.
+  // Si la migration no fue ejecutada todavía, Supabase los ignora con un error
+  // que el wrapper captura como "el sistema necesita actualizarse".
+  if (datos.email !== undefined)            payload.email = datos.email || null;
+  if (datos.telefono !== undefined)         payload.telefono = datos.telefono || null;
+  if (datos.telefonoSecundario !== undefined) payload.telefono_secundario = datos.telefonoSecundario || null;
+  if (datos.dni !== undefined)              payload.dni = datos.dni || null;
+  if (datos.fechaNacimiento !== undefined)  payload.fecha_nacimiento = datos.fechaNacimiento || null;
+  if (datos.genero !== undefined)           payload.genero = datos.genero || null;
+  if (datos.direccion !== undefined)        payload.direccion = datos.direccion || null;
+  if (datos.nacionalidad !== undefined)     payload.nacionalidad = datos.nacionalidad || null;
+  if (datos.observaciones !== undefined)    payload.observaciones = datos.observaciones || null;
+
+  const { data, error } = await supabase.from('profesionales').insert([payload]).select().single();
 
   if (error) {
     console.error('[Bridge] crearProfesional:', error);
@@ -538,36 +553,57 @@ async function crearProfesionalUI(datos) {
     return null;
   }
 
-  showToast(`✅ ${data.nombre} agregado al equipo.`);
+  showToast(`✅ ${data.nombre} agregado al equipo. Configurá sus horarios desde la lista.`);
   return data;
 }
 
 /**
  * guardarNuevoProfesional() — handler del modal #modalNuevoProf
+ * Lee datos básicos + contacto + administrativos del modal expandido.
  */
 async function guardarNuevoProfesionalSupabase() {
   const v = id => document.getElementById(id)?.value?.trim() || '';
 
-  const nombre       = v('profNombre');
-  const matricula    = v('profMatricula');
-  const especialidad = v('profEspecialidad');
-  const iniciales    = v('profIniciales');
-  const tipo         = v('profTipo');
+  // Datos básicos (obligatorios)
+  const nombre        = v('profNombre');
+  const matricula     = v('profMatricula');
+  const especialidad  = v('profEspecialidad');
+  const iniciales     = v('profIniciales');
+  const tipo          = v('profTipo');
   const consultorioId = v('profConsultorio');
+
+  // Datos extendidos (opcionales — migration 011)
+  const datosExtra = {
+    email:              v('profEmail') || undefined,
+    telefono:           v('profTel') || undefined,
+    telefonoSecundario: v('profTel2') || undefined,
+    dni:                v('profDNI') || undefined,
+    fechaNacimiento:    v('profFechaNac') || undefined,
+    genero:             v('profGenero') || undefined,
+    direccion:          v('profDir') || undefined,
+    nacionalidad:       v('profNacionalidad') || undefined,
+    observaciones:      v('profObs') || undefined,
+  };
 
   const data = await crearProfesionalUI({
     nombre, matricula, especialidad, iniciales, tipo,
     consultorioId: consultorioId ? Number(consultorioId) : null,
+    ...datosExtra,
   });
 
   if (!data) return;
 
   if (typeof window.closeModal === 'function') window.closeModal('modalNuevoProf');
 
-  // Limpiar form
-  ['profNombre','profMatricula','profIniciales'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = '';
-  });
+  // Limpiar todos los campos del form
+  [
+    'profNombre','profMatricula','profIniciales',
+    'profEmail','profTel','profTel2','profDNI','profFechaNac',
+    'profDir','profObs',
+  ].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  // Reset de selects que tienen default
+  const nac = document.getElementById('profNacionalidad'); if (nac) nac.value = 'Argentina';
+  const gen = document.getElementById('profGenero');       if (gen) gen.value = '';
 }
 
 // ============================================================
