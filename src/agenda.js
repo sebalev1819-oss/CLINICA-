@@ -1,18 +1,20 @@
 // ============================================================
 //  RehabMed ERP — Módulo Agenda
-//  Reemplaza: AGENDA_DATA array + renderAgenda() estático
-//  Agrega: Supabase Realtime para sincronización en tiempo real
+//  - Supabase Realtime para sync
+//  - Event delegation para acciones (evita XSS en onclick inline)
+//  - Render seguro con escapado HTML
 // ============================================================
 import { supabase } from './lib/supabase.js';
-import { currentProfile } from './auth.js';
+import { escapeHtml, escapeAttr, showToast } from './lib/dom.js';
 
 // ── Estado del módulo ─────────────────────────────────────
-let _agendaData       = [];        // cache local de turnos
-let _realtimeChannel  = null;      // canal activo de Supabase Realtime
-let _filtroActivo     = 'hoy';     // 'hoy' | 'semana' | 'mes'
+let _agendaData       = [];
+let _realtimeChannel  = null;
+let _filtroActivo     = 'hoy';
 let _searchQuery      = '';
+let _handlerInstalado = false;
 
-// ── Colores de estado (igual que el HTML original) ────────
+// ── Colores de estado ─────────────────────────────────────
 const ESTADO_COLOR = {
   'Confirmado':    'var(--emerald)',
   'En curso':      'var(--sky)',
@@ -32,6 +34,14 @@ const ESTADO_BG = {
   'Reprogramado':  'rgba(124,58,237,0.1)',
   'Lista espera':  'rgba(234,88,12,0.1)',
   'Finalizado':    'rgba(100,116,139,0.1)',
+};
+
+// ── Acciones disponibles desde cada card (data-action) ───
+const ACCIONES = {
+  confirmar:   { estado: 'Confirmado',   titulo: 'Confirmar Asistencia', icon: '✅', toast: 'Confirmado' },
+  'no-show':   { estado: 'No Show',      titulo: 'No-Show',              icon: '❌', toast: 'No-Show registrado' },
+  cancelar:    { estado: 'Cancelado',    titulo: 'Cancelar',             icon: '🗑️', toast: 'Turno cancelado' },
+  reprogramar: { estado: 'Reprogramado', titulo: 'Reprogramar',          icon: '↻',  toast: 'Listo para reprogramar' },
 };
 
 // ============================================================
@@ -57,8 +67,7 @@ export async function cargarAgenda(filtro = 'hoy') {
       .toISOString().slice(0, 10);
   }
 
-  // Si es profesional, filtrar por sus turnos (RLS también lo hace en el servidor)
-  let query = supabase
+  const { data, error } = await supabase
     .from('v_turnos_dia')
     .select('*')
     .gte('fecha', desde)
@@ -66,53 +75,36 @@ export async function cargarAgenda(filtro = 'hoy') {
     .order('fecha', { ascending: true })
     .order('hora',  { ascending: true });
 
-  const { data, error } = await query;
-
   if (error) {
-    console.error('[Agenda] ❌ Error al cargar:', error.message);
+    console.error('[Agenda] Error al cargar:', error.message);
     showToast('❌ Error al cargar la agenda');
     return;
   }
 
   _agendaData = data || [];
   renderAgenda(_agendaData);
+  instalarDelegacion();
   console.log(`[Agenda] ✅ ${_agendaData.length} turnos cargados (${filtro})`);
 }
 
 // ============================================================
-//  SUSCRIPCIÓN REALTIME — se actualiza automáticamente
+//  REALTIME — se actualiza automáticamente
 // ============================================================
 export function suscribirRealtime() {
-  // Evitar duplicados
   if (_realtimeChannel) {
     supabase.removeChannel(_realtimeChannel);
   }
 
   _realtimeChannel = supabase
     .channel('agenda-realtime')
-    .on(
-      'postgres_changes',
+    .on('postgres_changes',
       { event: '*', schema: 'public', table: 'turnos' },
-      (payload) => {
-        console.log('[Realtime] 📡 Cambio en turnos:', payload.eventType);
-        manejarCambioRealtime(payload);
-      }
-    )
-    .on(
-      'postgres_changes',
+      (payload) => manejarCambioRealtime(payload))
+    .on('postgres_changes',
       { event: 'UPDATE', schema: 'public', table: 'consultorios' },
-      (payload) => {
-        console.log('[Realtime] 📡 Cambio en consultorio:', payload.new.nombre);
-        actualizarConsultorioEnUI(payload.new);
-      }
-    )
+      (payload) => actualizarConsultorioEnUI(payload.new))
     .subscribe((status) => {
-      console.log('[Realtime] Estado:', status);
-      if (status === 'SUBSCRIBED') {
-        actualizarIndicadorRealtime(true);
-      } else {
-        actualizarIndicadorRealtime(false);
-      }
+      actualizarIndicadorRealtime(status === 'SUBSCRIBED');
     });
 }
 
@@ -120,8 +112,6 @@ function manejarCambioRealtime(payload) {
   const { eventType, new: nuevo, old: viejo } = payload;
 
   if (eventType === 'INSERT') {
-    // Agregar turno nuevo si está en el rango actual
-    // Re-cargar para obtener el JOIN completo (paciente, profesional, consultorio)
     cargarAgenda(_filtroActivo);
     showToast('📅 Nuevo turno agregado');
     return;
@@ -130,15 +120,12 @@ function manejarCambioRealtime(payload) {
   if (eventType === 'UPDATE') {
     const idx = _agendaData.findIndex(t => t.id === nuevo.id);
     if (idx !== -1) {
-      // Actualizar solo el turno cambiado sin recargar todo
       Object.assign(_agendaData[idx], { estado: nuevo.estado });
       renderAgenda(_agendaData);
-      // Si cambió el estado del consultorio, actualizar panel
       if (viejo.estado !== nuevo.estado) {
-        mostrarNotificacionCambio(nuevo);
+        showToast(`📡 ${_agendaData[idx].pac_nombre || 'Paciente'} → ${nuevo.estado}`);
       }
     } else {
-      // Turno no estaba en cache (quizás cambió de fecha al rango actual)
       cargarAgenda(_filtroActivo);
     }
     return;
@@ -151,56 +138,44 @@ function manejarCambioRealtime(payload) {
   }
 }
 
-function mostrarNotificacionCambio(turno) {
-  const msg = `${turno.pac_nombre || 'Paciente'} → ${turno.estado}`;
-  showToast(`📡 ${msg}`);
-}
-
 function actualizarIndicadorRealtime(conectado) {
   const dot  = document.querySelector('.status-dot');
   const text = document.querySelector('.status-text');
   if (!dot || !text) return;
-  if (conectado) {
-    dot.style.background  = 'var(--emerald)';
-    text.textContent      = 'En vivo';
-  } else {
-    dot.style.background  = 'var(--amber)';
-    text.textContent      = 'Reconectando...';
-  }
+  dot.style.background = conectado ? 'var(--emerald)' : 'var(--amber)';
+  text.textContent = conectado ? 'En vivo' : 'Reconectando...';
 }
 
 // ============================================================
-//  ACTUALIZAR ESTADO DE TURNO → Supabase
+//  ACTUALIZAR ESTADO DE TURNO
 // ============================================================
 export async function updateTurnoEstado(turnoId, nuevoEstado, toastMsg) {
+  const { data: { user } } = await supabase.auth.getUser();
+
   const { error } = await supabase
     .from('turnos')
-    .update({
-      estado:     nuevoEstado,
-      updated_by: (await supabase.auth.getUser()).data.user?.id,
-    })
+    .update({ estado: nuevoEstado, updated_by: user?.id })
     .eq('id', turnoId);
 
   if (error) {
-    console.error('[Agenda] ❌ Error al actualizar turno:', error.message);
+    console.error('[Agenda] Error al actualizar turno:', error.message);
     showToast('❌ No se pudo actualizar el estado');
     return false;
   }
 
-  // El Realtime se encarga de actualizar la UI
   showToast(`✅ ${toastMsg}`);
 
-  // NOTA: estado del consultorio se gestiona por triggers SQL (003 y 004):
-  //   • turno → 'En curso'    : (no implementado todavía)
-  //   • turno → 'Finalizado'  : trigger consultorio_a_limpieza setea estado=limpieza
-  //                             y limpieza_hasta = now() + 15min (configurable)
-  // El cliente solo se encarga de "En curso → ocupado" mientras no haya trigger:
-  if (nuevoEstado === 'En curso') {
-    const turno = _agendaData.find(t => t.id === turnoId);
-    if (turno) {
-      await supabase
-        .from('consultorios')
+  // Si el turno pasa a "En curso" → consultorio ocupado
+  // Si pasa a "Finalizado"       → consultorio en limpieza
+  const turno = _agendaData.find(t => t.id === turnoId);
+  if (turno) {
+    if (nuevoEstado === 'En curso') {
+      await supabase.from('consultorios')
         .update({ estado: 'ocupado' })
+        .eq('id', turno.consultorio_id);
+    } else if (nuevoEstado === 'Finalizado') {
+      await supabase.from('consultorios')
+        .update({ estado: 'limpieza' })
         .eq('id', turno.consultorio_id);
     }
   }
@@ -209,85 +184,85 @@ export async function updateTurnoEstado(turnoId, nuevoEstado, toastMsg) {
 }
 
 // ============================================================
-//  CREAR NUEVO TURNO
+//  CREAR TURNO
 // ============================================================
 export async function crearTurno(datos) {
-  const { data: user } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
   const { data, error } = await supabase
     .from('turnos')
     .insert([{
-      fecha:            datos.fecha,
-      hora:             datos.hora,
-      duracion_min:     datos.duracion || 45,
-      paciente_id:      datos.pacienteId,
-      profesional_id:   datos.profesionalId,
-      consultorio_id:   datos.consultorioId,
-      especialidad:     datos.especialidad,
-      tipo:             datos.tipo || 'Presencial',
-      estado:           'Pendiente',
-      cobertura:        datos.cobertura,
+      fecha:               datos.fecha,
+      hora:                datos.hora,
+      duracion_min:        datos.duracion || 45,
+      paciente_id:         datos.pacienteId,
+      profesional_id:      datos.profesionalId,
+      consultorio_id:      datos.consultorioId,
+      especialidad:        datos.especialidad,
+      tipo:                datos.tipo || 'Presencial',
+      estado:              'Pendiente',
+      cobertura:           datos.cobertura,
       numero_autorizacion: datos.autorizacion,
-      notas:            datos.notas,
-      created_by:       user?.user?.id,
+      notas:               datos.notas,
+      created_by:          user?.id,
     }])
     .select()
     .single();
 
   if (error) {
-    // Detectar solapamiento (constraint de PostgreSQL)
     if (error.code === '23P01') {
-      showToast('⚠️ El consultorio ya tiene un turno en ese horario');
+      showToast('⚠️ Solapamiento: ya hay un turno en ese horario');
     } else {
-      showToast('❌ Error al crear el turno: ' + error.message);
-      console.error('[Agenda] ❌', error);
+      showToast('❌ Error al crear el turno');
+      console.error('[Agenda]', error);
     }
     return null;
   }
 
-  showToast('✅ Turno creado correctamente');
-  // El Realtime INSERT actualizará la agenda automáticamente
+  showToast('✅ Turno creado');
   return data;
 }
 
 // ============================================================
-//  FILTRAR AGENDA (búsqueda local sobre cache)
+//  FILTRAR (búsqueda local)
 // ============================================================
 export function filterAgenda(q) {
-  _searchQuery = q;
+  _searchQuery = q || '';
+  const query = _searchQuery.toLowerCase();
   const filtrados = _agendaData.filter(t =>
-    !q ||
-    (t.pac_nombre  || '').toLowerCase().includes(q.toLowerCase()) ||
-    (t.prof_nombre || '').toLowerCase().includes(q.toLowerCase()) ||
-    (t.especialidad|| '').toLowerCase().includes(q.toLowerCase())
+    !query ||
+    (t.pac_nombre   || '').toLowerCase().includes(query) ||
+    (t.prof_nombre  || '').toLowerCase().includes(query) ||
+    (t.especialidad || '').toLowerCase().includes(query)
   );
   renderAgenda(filtrados);
 }
 
 // ============================================================
-//  RENDER (igual que el HTML original, adaptado a la vista)
+//  RENDER (con escapado HTML seguro)
 // ============================================================
 function renderAgenda(data) {
-  // Actualizar tabla compacta (si existe)
+  // Tabla compacta
   const tb = document.getElementById('agendaTbody');
   if (tb) {
     tb.innerHTML = data.slice(0, 10).map(t => {
       const estadoColor = ESTADO_COLOR[t.estado] || 'var(--text3)';
+      const estadoBg    = ESTADO_BG[t.estado]    || 'rgba(0,0,0,0.05)';
       return `
       <tr>
-        <td style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--sky2)">${String(t.hora).slice(0,5)}</td>
+        <td style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--sky2)">${escapeHtml(String(t.hora).slice(0,5))}</td>
         <td>
-          <div style="font-weight:700;color:var(--text)">${t.pac_nombre || '—'}</div>
-          <div style="font-size:10px;color:var(--text4)">${t.prof_nombre || '—'}</div>
+          <div style="font-weight:700;color:var(--text)">${escapeHtml(t.pac_nombre || '—')}</div>
+          <div style="font-size:10px;color:var(--text4)">${escapeHtml(t.prof_nombre || '—')}</div>
         </td>
-        <td><span class="badge badge-sky">C${t.consultorio_id || '—'}</span></td>
-        <td style="font-size:12px;color:var(--text3)">${t.especialidad || '—'}</td>
-        <td><span style="background:${ESTADO_BG[t.estado]||'rgba(0,0,0,0.05)'};color:${estadoColor};padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700">${t.estado}</span></td>
+        <td><span class="badge badge-sky">C${escapeHtml(String(t.consultorio_id || '—'))}</span></td>
+        <td style="font-size:12px;color:var(--text3)">${escapeHtml(t.especialidad || '—')}</td>
+        <td><span style="background:${estadoBg};color:${estadoColor};padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700">${escapeHtml(t.estado)}</span></td>
       </tr>`;
     }).join('');
   }
 
-  // Actualizar timeline principal
+  // Timeline
   const timeline = document.getElementById('agendaTimeline');
   if (!timeline) return;
 
@@ -303,21 +278,19 @@ function renderAgenda(data) {
     return;
   }
 
-  // Agrupar por hora
   const byHour = {};
   data.forEach(t => {
     const h = String(t.hora).slice(0, 5);
     if (!byHour[h]) byHour[h] = [];
     byHour[h].push(t);
   });
-  const sortedHours = Object.keys(byHour).sort();
 
-  timeline.innerHTML = sortedHours.map(hora => {
+  timeline.innerHTML = Object.keys(byHour).sort().map(hora => {
     const turnos = byHour[hora];
     return `
     <div class="agenda-hour-block">
       <div class="agenda-hour-label">
-        <div class="agenda-hour-time">${hora}</div>
+        <div class="agenda-hour-time">${escapeHtml(hora)}</div>
         <div class="agenda-hour-count">${turnos.length} turno${turnos.length !== 1 ? 's' : ''}</div>
       </div>
       <div class="agenda-hour-cards">
@@ -336,50 +309,45 @@ function renderTurnoCard(t) {
 
   const cobTag = esParticular
     ? `<span style="font-size:10px;padding:2px 7px;border-radius:5px;background:rgba(5,150,105,0.1);color:var(--emerald);font-weight:600">💰 Particular</span>`
-    : `<span style="font-size:10px;padding:2px 7px;border-radius:5px;background:rgba(14,165,233,0.1);color:var(--sky2);font-weight:600">🏥 ${cob}</span>`;
+    : `<span style="font-size:10px;padding:2px 7px;border-radius:5px;background:rgba(14,165,233,0.1);color:var(--sky2);font-weight:600">🏥 ${escapeHtml(cob)}</span>`;
 
-  // Botones de acción — pasan el ID real del turno
-  const id = t.id;
-  return `<div class="agenda-turno-card">
+  // Sin onclick inline → data-attributes (event delegation)
+  return `<div class="agenda-turno-card" data-turno-id="${escapeAttr(t.id)}">
     <div class="agenda-card-left-bar" style="background:${estadoColor}"></div>
     <div class="agenda-card-body">
       <div class="agenda-card-top">
         <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
-          <div class="avatar" style="width:38px;height:38px;font-size:13px;flex-shrink:0;background:linear-gradient(135deg,${estadoColor}88,${estadoColor}44);color:${estadoColor};border:2px solid ${estadoColor}33">${initials}</div>
+          <div class="avatar" style="width:38px;height:38px;font-size:13px;flex-shrink:0;background:linear-gradient(135deg,${estadoColor}88,${estadoColor}44);color:${estadoColor};border:2px solid ${estadoColor}33">${escapeHtml(initials)}</div>
           <div style="min-width:0">
-            <div style="font-weight:700;font-size:14px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.pac_nombre || '—'}</div>
-            <div style="font-size:11px;color:var(--text3);margin-top:1px">${t.prof_nombre || '—'} · <span style="color:var(--sky2)">${t.especialidad || '—'}</span></div>
+            <div style="font-weight:700;font-size:14px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(t.pac_nombre || '—')}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:1px">${escapeHtml(t.prof_nombre || '—')} · <span style="color:var(--sky2)">${escapeHtml(t.especialidad || '—')}</span></div>
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-          <span style="background:${estadoBg};color:${estadoColor};padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;border:1px solid ${estadoColor}33">${t.estado}</span>
+          <span style="background:${estadoBg};color:${estadoColor};padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;border:1px solid ${estadoColor}33">${escapeHtml(t.estado)}</span>
         </div>
       </div>
       <div class="agenda-card-meta">
         <span class="agenda-meta-chip" style="background:rgba(3,105,161,0.07);color:var(--sky)">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          C${t.consultorio_id || '—'}
+          C${escapeHtml(String(t.consultorio_id || '—'))}
         </span>
         <span class="agenda-meta-chip" style="background:rgba(0,0,0,0.04);color:var(--text3)">
-          ${t.tipo || 'Presencial'}
+          ${escapeHtml(t.tipo || 'Presencial')}
         </span>
         ${cobTag}
       </div>
       <div class="agenda-card-actions">
-        <button class="agenda-action-btn confirm"
-          onclick="askConfirmAction('Confirmar Asistencia','¿Confirmar asistencia de ${(t.pac_nombre||'').replace(/'/g,"\\'")}?','✅',()=>window.AgendaMod.updateTurnoEstado('${id}','Confirmado','Confirmado ✅'))">
+        <button class="agenda-action-btn confirm"   data-action="confirmar">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Confirmar
         </button>
-        <button class="agenda-action-btn noshow"
-          onclick="askConfirmAction('No-Show','¿Registrar No-Show para ${(t.pac_nombre||'').replace(/'/g,"\\'")}?','❌',()=>window.AgendaMod.updateTurnoEstado('${id}','No Show','No-Show registrado'))">
+        <button class="agenda-action-btn noshow"    data-action="no-show">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> No-Show
         </button>
-        <button class="agenda-action-btn cancel"
-          onclick="askConfirmAction('Cancelar','¿Cancelar el turno de ${(t.pac_nombre||'').replace(/'/g,"\\'")}?','🗑️',()=>window.AgendaMod.updateTurnoEstado('${id}','Cancelado','Turno cancelado'))">
+        <button class="agenda-action-btn cancel"    data-action="cancelar">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> Cancelar
         </button>
-        <button class="agenda-action-btn reschedule"
-          onclick="askConfirmAction('Reprogramar','¿Reprogramar el turno de ${(t.pac_nombre||'').replace(/'/g,"\\'")}?','↻',()=>window.AgendaMod.updateTurnoEstado('${id}','Reprogramado','Listo para reprogramar'))">
+        <button class="agenda-action-btn reschedule" data-action="reprogramar">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg> Reprogramar
         </button>
       </div>
@@ -388,37 +356,65 @@ function renderTurnoCard(t) {
 }
 
 // ============================================================
-//  ACTUALIZAR CONSULTORIO EN UI (desde Realtime)
+//  EVENT DELEGATION — reemplaza los onclick inline
+//  Elimina el vector XSS del nombre del paciente
 // ============================================================
-function actualizarConsultorioEnUI(consultorio) {
-  // El panel de consultorios se re-renderiza al recibir el evento
-  if (typeof renderConsultorios === 'function') {
-    renderConsultorios();
-  }
+function instalarDelegacion() {
+  if (_handlerInstalado) return;
+  const timeline = document.getElementById('agendaTimeline');
+  if (!timeline) return;
+
+  timeline.addEventListener('click', async (ev) => {
+    const btn = ev.target.closest('[data-action]');
+    if (!btn) return;
+    const card = btn.closest('[data-turno-id]');
+    if (!card) return;
+
+    const turnoId = card.getAttribute('data-turno-id');
+    const action  = btn.getAttribute('data-action');
+    const acc     = ACCIONES[action];
+    if (!acc) return;
+
+    const turno = _agendaData.find(t => t.id === turnoId);
+    const nombrePac = turno?.pac_nombre || 'el paciente';
+
+    const pregunta = `¿${acc.titulo} el turno de ${nombrePac}?`;
+    const confirmar = typeof window.askConfirmAction === 'function'
+      ? () => new Promise(res => window.askConfirmAction(acc.titulo, pregunta, acc.icon, () => res(true), () => res(false)))
+      : () => Promise.resolve(window.confirm(pregunta));
+
+    const ok = await confirmar();
+    if (ok) {
+      await updateTurnoEstado(turnoId, acc.estado, acc.toast);
+    }
+  });
+
+  _handlerInstalado = true;
 }
 
 // ============================================================
-//  CONSULTORIOS EN TIEMPO REAL
+//  CONSULTORIOS
 // ============================================================
+function actualizarConsultorioEnUI(_consultorio) {
+  if (typeof window.renderConsultorios === 'function') {
+    window.renderConsultorios();
+  }
+}
+
 export async function cargarConsultorios() {
   const { data, error } = await supabase
     .from('consultorios')
-    .select(`
-      *,
-      profesionales (nombre)
-    `)
+    .select('*, profesionales (nombre)')
     .order('id');
 
   if (error) {
-    console.error('[Consultorios] ❌', error.message);
+    console.error('[Consultorios]', error.message);
     return [];
   }
   return data;
 }
 
-// ============================================================
-//  EXPORT para acceso global desde el HTML inline
-// ============================================================
+// ── Export global para código legacy inline en HTML ──────
 window.AgendaMod = {
   cargarAgenda,
   filterAgenda,

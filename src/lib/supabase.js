@@ -1,26 +1,30 @@
 // ============================================================
 //  RehabMed ERP — Cliente Supabase
-//  Reemplaza: arrays hardcodeados + localStorage
+//  Las credenciales vienen de variables de entorno (Vite)
+//  Definir en Netlify > Site settings > Environment variables:
+//    VITE_SUPABASE_URL
+//    VITE_SUPABASE_ANON_KEY
 // ============================================================
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from '@supabase/supabase-js';
 
-// ── Configuración ─────────────────────────────────────────
-// IMPORTANTE: pegar acá los valores de Supabase > Settings > API
-//   - SUPABASE_URL: "Project URL"
-//   - SUPABASE_ANON: "anon public" key (es PÚBLICA por diseño,
-//     la seguridad real está en las RLS policies del schema)
-const SUPABASE_URL  = 'https://TU_PROYECTO.supabase.co';   // ← REEMPLAZAR
-const SUPABASE_ANON = 'TU_ANON_PUBLIC_KEY';                // ← REEMPLAZAR
+const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON, {
+if (!SUPABASE_URL || !SUPABASE_ANON) {
+  console.error(
+    '[Supabase] Faltan VITE_SUPABASE_URL o VITE_SUPABASE_ANON_KEY.\n' +
+    'Creá un .env local (ver .env.example) o configuralas en Netlify.'
+  );
+}
+
+export const supabase = createClient(SUPABASE_URL || '', SUPABASE_ANON || '', {
   auth: {
-    autoRefreshToken:    true,
-    persistSession:      true,      // guarda sesión en localStorage
-    detectSessionInUrl:  false,
+    autoRefreshToken:   true,
+    persistSession:     true,
+    detectSessionInUrl: false,
   },
 });
 
-// ── Re-exports de helpers frecuentes ─────────────────────
 export const auth = supabase.auth;
 export const db   = supabase.from.bind(supabase);
 export const rt   = supabase.channel.bind(supabase);
