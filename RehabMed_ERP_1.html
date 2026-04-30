@@ -2388,20 +2388,23 @@ Respondé con el número de tu opción 👇</textarea>
 
 <div class="modal-overlay" id="modalNuevoPaciente">
   <div class="modal" style="width:680px;max-height:90vh;overflow-y:auto">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;position:sticky;top:-28px;background:var(--bg3);padding:12px 0;z-index:1">
-      <div class="modal-title">+ Nuevo Paciente — Ficha Completa</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;position:sticky;top:-28px;background:var(--bg3);padding:12px 0;z-index:1">
+      <div>
+        <div class="modal-title" style="margin-bottom:2px">+ Nuevo Paciente</div>
+        <div style="font-size:11px;color:var(--text3);font-weight:500">Solo los campos con * son obligatorios. El resto lo podés completar después desde la ficha.</div>
+      </div>
       <button class="modal-close" onclick="closeModal('modalNuevoPaciente')">×</button>
     </div>
 
-    <!-- SECCIÓN 1: DATOS PERSONALES -->
+    <!-- ╔════════ SECCIÓN 1: DATOS PERSONALES (siempre visible) ════════╗ -->
     <div style="font-size:11px;font-weight:700;color:var(--sky);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);padding-bottom:8px">👤 Datos Personales</div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Nombre *</label><input class="form-input" id="pacNombre" placeholder="Nombre/s"></div>
-      <div class="form-group"><label class="form-label">Apellido *</label><input class="form-input" id="pacApellido" placeholder="Apellido/s"></div>
+      <div class="form-group"><label class="form-label">Nombre *</label><input class="form-input" id="pacNombre" placeholder="Cómo lo llamás" autocomplete="off"></div>
+      <div class="form-group"><label class="form-label">Apellido *</label><input class="form-input" id="pacApellido" placeholder="Apellido/s" autocomplete="off"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">DNI / CUIL *</label><input class="form-input" id="pacDNI" placeholder="XX.XXX.XXX"></div>
-      <div class="form-group"><label class="form-label">Fecha de Nacimiento *</label><input class="form-input" id="pacFechaNac" type="date"></div>
+      <div class="form-group"><label class="form-label">DNI *</label><input class="form-input" id="pacDNI" placeholder="Sin puntos: 31445892" inputmode="numeric"></div>
+      <div class="form-group"><label class="form-label">Fecha de Nacimiento</label><input class="form-input" id="pacFechaNac" type="date"></div>
     </div>
     <div class="form-row">
       <div class="form-group"><label class="form-label">Género</label><select class="form-select" id="pacGenero"><option>Masculino</option><option>Femenino</option><option>Otro</option><option>No especifica</option></select></div>
@@ -2418,10 +2421,14 @@ Respondé con el número de tu opción 👇</textarea>
       <div class="form-group"><label class="form-label">Nacionalidad</label><input class="form-input" id="pacNacionalidad" placeholder="Argentina" value="Argentina"></div>
     </div>
 
-    <!-- SECCIÓN 2: INFORMACIÓN MÉDICA -->
-    <div style="font-size:11px;font-weight:700;color:var(--emerald);text-transform:uppercase;letter-spacing:0.08em;margin:18px 0 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);padding-bottom:8px">🏥 Información Médica</div>
+    <!-- ╔════════ SECCIÓN 2: INFORMACIÓN MÉDICA (acordeón abierto) ════════╗ -->
+    <details open style="margin:18px 0 0">
+      <summary style="cursor:pointer;list-style:none;outline:none;font-size:11px;font-weight:700;color:var(--emerald);text-transform:uppercase;letter-spacing:0.08em;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:10px">
+        <span>🏥 Información Médica</span>
+        <span style="margin-left:auto;font-size:13px;color:var(--text4);text-transform:none;letter-spacing:0;font-weight:500">click para mostrar/ocultar</span>
+      </summary>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Cobertura Médica *</label><select class="form-select" id="pacCob"><option>Particular</option><option>OSDE 210</option><option>OSDE 310</option><option>OSDE 410</option><option>OSDE 450</option><option>Swiss Medical SMG20</option><option>Swiss Medical SMG30</option><option>IOMA</option><option>Galeno Azul</option><option>Galeno Oro</option><option>Medifé</option><option>PAMI</option><option>Accord Salud</option><option>Omint</option><option>OSPRERA</option><option>Unión Personal</option><option>Otra</option></select></div>
+      <div class="form-group"><label class="form-label">Cobertura</label><select class="form-select" id="pacCob"><option>Particular</option><option>OSDE 210</option><option>OSDE 310</option><option>OSDE 410</option><option>OSDE 450</option><option>Swiss Medical SMG20</option><option>Swiss Medical SMG30</option><option>IOMA</option><option>Galeno Azul</option><option>Galeno Oro</option><option>Medifé</option><option>PAMI</option><option>Accord Salud</option><option>Omint</option><option>OSPRERA</option><option>Unión Personal</option><option>Otra</option></select></div>
       <div class="form-group"><label class="form-label">N° Afiliado</label><input class="form-input" id="pacAfiliado" placeholder="Número de credencial"></div>
     </div>
     <div class="form-row">
@@ -2435,27 +2442,37 @@ Respondé con el número de tu opción 👇</textarea>
       <div class="form-group"><label class="form-label">Médico Derivante</label><input class="form-input" id="pacMedDer" placeholder="Dr./Dra. Nombre Completo"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Matrícula Médico Derivante</label><input class="form-input" id="pacMedMat" placeholder="MN / MP XXXXX"></div>
-      <div class="form-group"><label class="form-label">Sesiones Autorizadas</label><input class="form-input" id="pacSesiones" type="number" min="1" placeholder="Cantidad autorizada"></div>
+      <div class="form-group"><label class="form-label">Matrícula del médico</label><input class="form-input" id="pacMedMat" placeholder="MN o MP del médico"></div>
+      <div class="form-group"><label class="form-label">Sesiones autorizadas</label><input class="form-input" id="pacSesiones" type="number" min="1" placeholder="¿Cuántas autorizó la OS?"></div>
     </div>
     <div class="form-row">
       <div class="form-group"><label class="form-label">Grupo Sanguíneo</label><select class="form-select" id="pacSangre"><option>No especificado</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select></div>
-      <div class="form-group"><label class="form-label">Peso (kg) / Altura (cm)</label><input class="form-input" id="pacPesoAltura" placeholder="Ej: 75 / 170"></div>
+      <div class="form-group"><label class="form-label">Peso / Altura</label><input class="form-input" id="pacPesoAltura" placeholder="Ej: 75kg / 170cm"></div>
     </div>
+    </details>
 
-    <!-- SECCIÓN 3: MEDICACIÓN Y ANTECEDENTES -->
-    <div style="font-size:11px;font-weight:700;color:var(--violet);text-transform:uppercase;letter-spacing:0.08em;margin:18px 0 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);padding-bottom:8px">💊 Medicación y Antecedentes</div>
-    <div class="form-group"><label class="form-label">Alergias Conocidas</label><input class="form-input" id="pacAlergias" placeholder="Látex, AINEs, Penicilina, etc. (indicar 'Ninguna' si no tiene)"></div>
+    <!-- ╔════════ SECCIÓN 3: MEDICACIÓN Y ANTECEDENTES (cerrado) ════════╗ -->
+    <details style="margin:0">
+      <summary style="cursor:pointer;list-style:none;outline:none;font-size:11px;font-weight:700;color:var(--violet);text-transform:uppercase;letter-spacing:0.08em;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);padding-bottom:8px;margin:18px 0 10px">
+        <span>💊 Medicación y Antecedentes</span>
+        <span style="margin-left:auto;font-size:13px;color:var(--text4);text-transform:none;letter-spacing:0;font-weight:500">opcional · click para expandir</span>
+      </summary>
+    <div class="form-group"><label class="form-label">Alergias conocidas</label><input class="form-input" id="pacAlergias" placeholder="Ninguna conocida (default)"></div>
     <div class="form-group"><label class="form-label">Medicación Actual (nombre · dosis · frecuencia)</label><textarea class="form-input" id="pacMedicacion" rows="3" style="resize:vertical;min-height:60px" placeholder="Ej:&#10;Ibuprofeno 400mg — cada 8hs&#10;Omeprazol 20mg — 1 vez/día&#10;Pregabalina 75mg — noche"></textarea></div>
     <div class="form-group"><label class="form-label">Antecedentes Quirúrgicos</label><textarea class="form-input" id="pacCirugias" rows="2" style="resize:vertical;min-height:45px" placeholder="Cirugías previas con fecha aproximada"></textarea></div>
     <div class="form-group"><label class="form-label">Enfermedades Crónicas / Comorbilidades</label><input class="form-input" id="pacCronicas" placeholder="Diabetes, HTA, Hipotiroidismo, Asma, etc."></div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Marcapasos / Implante Metálico</label><select class="form-select" id="pacImplante"><option>No</option><option>Sí — Marcapasos</option><option>Sí — Prótesis rodilla</option><option>Sí — Prótesis cadera</option><option>Sí — Placas/Tornillos</option><option>Sí — Otro</option></select></div>
+      <div class="form-group"><label class="form-label">Marcapasos / Implante metálico</label><select class="form-select" id="pacImplante"><option>No</option><option>Sí — Marcapasos</option><option>Sí — Prótesis rodilla</option><option>Sí — Prótesis cadera</option><option>Sí — Placas/Tornillos</option><option>Sí — Otro</option></select></div>
       <div class="form-group"><label class="form-label">Embarazo</label><select class="form-select" id="pacEmbarazo"><option>No aplica</option><option>No</option><option>Sí — 1er trimestre</option><option>Sí — 2do trimestre</option><option>Sí — 3er trimestre</option></select></div>
     </div>
+    </details>
 
-    <!-- SECCIÓN 4: AUTORIZACIONES Y DOCUMENTOS -->
-    <div style="font-size:11px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:0.08em;margin:18px 0 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);padding-bottom:8px">📎 Autorizaciones y Documentos</div>
+    <!-- ╔════════ SECCIÓN 4: AUTORIZACIONES Y DOCUMENTOS (cerrado) ════════╗ -->
+    <details style="margin:0">
+      <summary style="cursor:pointer;list-style:none;outline:none;font-size:11px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:0.08em;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);padding-bottom:8px;margin:18px 0 10px">
+        <span>📎 Autorizaciones y Documentos</span>
+        <span style="margin-left:auto;font-size:13px;color:var(--text4);text-transform:none;letter-spacing:0;font-weight:500">se pueden cargar después · click para expandir</span>
+      </summary>
     <div class="form-row">
       <div class="form-group"><label class="form-label">N° Autorización OS</label><input class="form-input" id="pacAuth" placeholder="Número de autorización"></div>
       <div class="form-group"><label class="form-label">Fecha Autorización</label><input class="form-input" id="pacAuthFecha" type="date"></div>
@@ -2490,9 +2507,14 @@ Respondé con el número de tu opción 👇</textarea>
         <input type="file" id="fileCredencial" accept=".pdf,.jpg,.jpeg,.png" multiple style="display:none" onchange="showToast('🪪 Credencial cargada: '+this.files.length+' archivo(s)')">
       </div>
     </div>
+    </details>
 
-    <!-- SECCIÓN 5: CONTACTO DE EMERGENCIA -->
-    <div style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:0.08em;margin:18px 0 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);padding-bottom:8px">🚨 Contacto de Emergencia</div>
+    <!-- ╔════════ SECCIÓN 5: CONTACTO DE EMERGENCIA (cerrado) ════════╗ -->
+    <details style="margin:0">
+      <summary style="cursor:pointer;list-style:none;outline:none;font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:0.08em;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);padding-bottom:8px;margin:18px 0 10px">
+        <span>🚨 Contacto de Emergencia</span>
+        <span style="margin-left:auto;font-size:13px;color:var(--text4);text-transform:none;letter-spacing:0;font-weight:500">opcional · click para expandir</span>
+      </summary>
     <div class="form-row">
       <div class="form-group"><label class="form-label">Nombre Completo *</label><input class="form-input" id="pacEmergNombre" placeholder="Nombre del contacto de emergencia"></div>
       <div class="form-group"><label class="form-label">Relación</label><select class="form-select" id="pacEmergRel"><option>Cónyuge</option><option>Padre/Madre</option><option>Hijo/a</option><option>Hermano/a</option><option>Familiar directo</option><option>Amigo/a</option><option>Tutor legal</option><option>Otro</option></select></div>
@@ -2501,21 +2523,27 @@ Respondé con el número de tu opción 👇</textarea>
       <div class="form-group"><label class="form-label">Teléfono Emergencia *</label><input class="form-input" id="pacEmergTel" placeholder="+54 11 XXXX-XXXX"></div>
       <div class="form-group"><label class="form-label">Teléfono Alternativo</label><input class="form-input" id="pacEmergTel2" placeholder="+54 11 XXXX-XXXX"></div>
     </div>
-    <div class="form-group"><label class="form-label">Dirección del Contacto</label><input class="form-input" id="pacEmergDir" placeholder="Dirección del contacto de emergencia"></div>
+    <div class="form-group"><label class="form-label">Dirección del contacto</label><input class="form-input" id="pacEmergDir" placeholder="Dirección del contacto de emergencia"></div>
+    </details>
 
-    <!-- SECCIÓN 6: NOTAS Y CONSENTIMIENTO -->
-    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin:18px 0 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);padding-bottom:8px">📝 Notas y Consentimiento</div>
+    <!-- ╔════════ SECCIÓN 6: NOTAS Y CONSENTIMIENTO (cerrado) ════════╗ -->
+    <details style="margin:0">
+      <summary style="cursor:pointer;list-style:none;outline:none;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);padding-bottom:8px;margin:18px 0 10px">
+        <span>📝 Notas y Consentimiento</span>
+        <span style="margin-left:auto;font-size:13px;color:var(--text4);text-transform:none;letter-spacing:0;font-weight:500">opcional · click para expandir</span>
+      </summary>
     <div class="form-group"><label class="form-label">Observaciones Clínicas</label><textarea class="form-input" id="pacObs" rows="3" style="resize:vertical;min-height:60px" placeholder="Información relevante adicional sobre el paciente, limitaciones, consideraciones especiales..."></textarea></div>
     <div class="form-group"><label class="form-label">Motivo de Consulta</label><textarea class="form-input" id="pacMotivo" rows="2" style="resize:vertical;min-height:45px" placeholder="Síntomas, duración, factores que agravan/mejoran..."></textarea></div>
     <div style="display:flex;align-items:flex-start;gap:10px;padding:14px;background:var(--bg);border-radius:10px;border:1px solid var(--border);margin-bottom:14px">
       <input type="checkbox" id="pacConsentimiento" style="margin-top:3px;flex-shrink:0;width:16px;height:16px;accent-color:var(--sky)">
-      <label for="pacConsentimiento" style="font-size:12px;color:var(--text3);line-height:1.5;cursor:pointer">El paciente ha firmado el <strong style="color:var(--text)">consentimiento informado</strong> y autoriza el tratamiento, la recopilación de datos y el envío de comunicaciones por WhatsApp/Email. La ficha clínica se rige bajo la Ley 25.326 de Protección de Datos Personales.</label>
+      <label for="pacConsentimiento" style="font-size:12px;color:var(--text3);line-height:1.5;cursor:pointer">El paciente firmó el <strong style="color:var(--text)">consentimiento informado</strong> y autoriza el tratamiento, los datos clínicos y las comunicaciones por WhatsApp / Email (Ley 25.326).</label>
     </div>
+    </details>
 
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:10px;position:sticky;bottom:-28px;background:var(--bg3);padding:12px 0;border-top:1px solid var(--border)">
       <button class="btn btn-ghost" onclick="closeModal('modalNuevoPaciente')">Cancelar</button>
-      <button class="btn btn-ghost" onclick="showToast('🖨️ Formulario enviado a impresión')">Imprimir Ficha</button>
-      <button class="btn btn-sky" onclick="guardarNuevoPaciente()">Guardar Paciente</button>
+      <button class="btn btn-ghost" onclick="showToast('🖨️ Formulario enviado a impresión')">Imprimir ficha</button>
+      <button class="btn btn-sky" onclick="guardarNuevoPaciente()">Crear paciente</button>
     </div>
   </div>
 </div>
