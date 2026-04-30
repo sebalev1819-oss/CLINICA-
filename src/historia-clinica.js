@@ -4,6 +4,7 @@
 // ============================================================
 import { supabase } from './lib/supabase.js';
 import { escapeHtml, showToast } from './lib/dom.js';
+import { formatSupabaseError } from './lib/errors.js';
 
 let _pacienteActual = null;
 
@@ -131,12 +132,12 @@ export async function crearEvolucion(datos) {
   }]).select().single();
 
   if (error) {
-    showToast(`❌ ${error.message}`);
     console.error('[HC] crearEvolucion:', error);
+    showToast('❌ ' + formatSupabaseError(error, 'evolución'));
     return null;
   }
 
-  showToast('✅ Evolución guardada como borrador');
+  showToast('💾 Evolución guardada como borrador. Firmala cuando esté lista.');
   await cargarEvoluciones(datos.pacienteId);
   return data;
 }
@@ -147,7 +148,7 @@ export async function crearEvolucion(datos) {
 // ============================================================
 export async function firmarEvolucion(evolucionId) {
   const ok = window.confirm(
-    'Firmar esta evolución la bloquea: no se podrá editar ni borrar. ¿Confirmás?'
+    'Una vez firmada, esta evolución queda como registro legal y no se puede editar ni eliminar.\n\n¿Continuar?'
   );
   if (!ok) return;
 
@@ -156,12 +157,12 @@ export async function firmarEvolucion(evolucionId) {
     .eq('id', evolucionId);
 
   if (error) {
-    showToast(`❌ ${error.message}`);
     console.error('[HC] firmar:', error);
+    showToast('❌ ' + formatSupabaseError(error, 'firma'));
     return;
   }
 
-  showToast('🔏 Evolución firmada');
+  showToast('🔏 Evolución firmada y bloqueada como registro legal.');
   if (_pacienteActual) await cargarEvoluciones(_pacienteActual);
 }
 

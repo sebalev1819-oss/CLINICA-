@@ -14,6 +14,7 @@
 // ============================================================
 import { supabase } from './lib/supabase.js';
 import { showToast } from './lib/dom.js';
+import { formatSupabaseError } from './lib/errors.js';
 
 let _rtChannel = null;
 
@@ -368,17 +369,13 @@ async function guardarNuevoTurnoSupabase() {
   }]);
 
   if (error) {
-    if (error.code === '23P01') {
-      showToast('⚠️ Ya hay un turno en ese horario (consultorio o profesional)');
-    } else {
-      showToast(`❌ ${error.message}`);
-      console.error('[Bridge]', error);
-    }
+    console.error('[Bridge] crearTurno:', error);
+    showToast('❌ ' + formatSupabaseError(error, 'turno'));
     return;
   }
 
   if (typeof window.closeModal === 'function') window.closeModal('modalNuevoTurno');
-  showToast(`✅ Turno creado: ${pacNombre} — ${hora}`);
+  showToast(`✅ Turno reservado: ${pacNombre} a las ${hora}`);
 }
 
 // ============================================================
@@ -404,12 +401,12 @@ async function crearPacienteUI(datos) {
   }]).select().single();
 
   if (error) {
-    showToast(`❌ ${error.message}`);
     console.error('[Bridge] crearPaciente:', error);
+    showToast('❌ ' + formatSupabaseError(error, 'paciente'));
     return null;
   }
 
-  showToast(`✅ Paciente ${data.nombre} creado (${data.ref})`);
+  showToast(`✅ ${data.nombre} agregado (${data.ref}). Listo para agendar turno.`);
   return data;
 }
 
@@ -496,12 +493,12 @@ async function guardarNuevoPacienteSupabase() {
   }]).select().single();
 
   if (error) {
-    showToast(`❌ ${error.message}`);
     console.error('[Bridge] guardarNuevoPaciente:', error);
+    showToast('❌ ' + formatSupabaseError(error, 'paciente'));
     return;
   }
 
-  showToast(`✅ ${data.nombre} creado (${data.ref})`);
+  showToast(`✅ ${data.nombre} agregado (${data.ref}). Ya podés agendar.`);
 
   if (typeof window.closeModal === 'function') window.closeModal('modalNuevoPaciente');
 
@@ -536,12 +533,12 @@ async function crearProfesionalUI(datos) {
   }]).select().single();
 
   if (error) {
-    showToast(`❌ ${error.message}`);
     console.error('[Bridge] crearProfesional:', error);
+    showToast('❌ ' + formatSupabaseError(error, 'profesional'));
     return null;
   }
 
-  showToast(`✅ Profesional ${data.nombre} creado`);
+  showToast(`✅ ${data.nombre} agregado al equipo.`);
   return data;
 }
 
