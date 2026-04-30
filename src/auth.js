@@ -2,6 +2,7 @@
 //  RehabMed ERP — Módulo Auth (Supabase)
 // ============================================================
 import { supabase } from './lib/supabase.js';
+import { formatSupabaseError } from './lib/errors.js';
 
 export const ROLE_PERMISSIONS = {
   admin:       ['dashboard','agenda','pacientes','hclinica','profesionales','noshow','facturacion','stock','proveedores','rrhh','crm','marketing','bi','contabilidad','whatsapp','leadficha'],
@@ -33,17 +34,18 @@ export async function doLogin(e) {
   errEl?.classList.remove('show');
 
   try {
-    console.log('[Auth] Intentando login con:', email);
     const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
-    console.log('[Auth] Respuesta Supabase:', { data, error });
-    if (error) throw new Error(`Supabase: ${error.message} (${error.status || 'sin status'})`);
-    if (!data.user) throw new Error('No se devolvió usuario');
+    if (error) {
+      console.warn('[Auth] login rechazado:', error);
+      throw error;       // será formateado en el catch de abajo
+    }
+    if (!data.user) throw new Error('No se pudo iniciar sesión. Reintentá.');
 
     const { data: profile, error: profileErr } = await supabase
       .from('profiles').select('*').eq('id', data.user.id).single();
 
-    if (profileErr || !profile) throw new Error('Perfil no encontrado. Contactá al administrador.');
-    if (!profile.activo)        throw new Error('Tu cuenta está desactivada.');
+    if (profileErr || !profile) throw new Error('Tu cuenta no tiene perfil asignado. Pedile a un admin que te active.');
+    if (!profile.activo)        throw new Error('Tu cuenta está desactivada. Contactá a un admin para reactivarla.');
 
     currentUser    = data.user;
     currentProfile = profile;
@@ -60,13 +62,18 @@ export async function doLogin(e) {
 
     console.log(`[Auth] ✅ ${profile.nombre} (${profile.rol})`);
   } catch (err) {
+    // Si vino de Supabase Auth, lo formateamos. Si es uno nuestro, ya tiene mensaje humano.
+    const mensaje = err?.code || err?.error_code
+      ? formatSupabaseError(err, 'sesión')
+      : (err?.message || 'No se pudo iniciar sesión. Reintentá.');
+
     if (errEl) {
-      errEl.textContent = err.message || 'Error al ingresar';
+      errEl.textContent = mensaje;
       errEl.classList.add('show');
     }
     document.getElementById('loginPass').value = '';
     document.getElementById('loginPass').focus();
-    console.warn('[Auth] ❌', err.message);
+    console.warn('[Auth] ❌', err);
   } finally {
     if (btnEl) { btnEl.disabled = false; btnEl.textContent = 'Ingresar'; }
   }

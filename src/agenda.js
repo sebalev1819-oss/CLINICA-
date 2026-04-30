@@ -6,6 +6,7 @@
 // ============================================================
 import { supabase } from './lib/supabase.js';
 import { escapeHtml, escapeAttr, showToast } from './lib/dom.js';
+import { formatSupabaseError } from './lib/errors.js';
 
 // ── Estado del módulo ─────────────────────────────────────
 let _agendaData       = [];
@@ -76,8 +77,8 @@ export async function cargarAgenda(filtro = 'hoy') {
     .order('hora',  { ascending: true });
 
   if (error) {
-    console.error('[Agenda] Error al cargar:', error.message);
-    showToast('❌ Error al cargar la agenda');
+    console.error('[Agenda] Error al cargar:', error);
+    showToast('❌ ' + formatSupabaseError(error, 'agenda'));
     return;
   }
 
@@ -158,8 +159,8 @@ export async function updateTurnoEstado(turnoId, nuevoEstado, toastMsg) {
     .eq('id', turnoId);
 
   if (error) {
-    console.error('[Agenda] Error al actualizar turno:', error.message);
-    showToast('❌ No se pudo actualizar el estado');
+    console.error('[Agenda] Error al actualizar turno:', error);
+    showToast('❌ ' + formatSupabaseError(error, 'turno'));
     return false;
   }
 
@@ -210,16 +211,12 @@ export async function crearTurno(datos) {
     .single();
 
   if (error) {
-    if (error.code === '23P01') {
-      showToast('⚠️ Solapamiento: ya hay un turno en ese horario');
-    } else {
-      showToast('❌ Error al crear el turno');
-      console.error('[Agenda]', error);
-    }
+    console.error('[Agenda] crearTurno:', error);
+    showToast('❌ ' + formatSupabaseError(error, 'turno'));
     return null;
   }
 
-  showToast('✅ Turno creado');
+  showToast(`✅ Turno reservado para las ${datos.hora}`);
   return data;
 }
 

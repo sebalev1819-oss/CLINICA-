@@ -4,6 +4,7 @@
 // ============================================================
 import { supabase } from '../lib/supabase.js';
 import { escapeHtml, escapeAttr, showToast } from '../lib/dom.js';
+import { formatSupabaseError } from '../lib/errors.js';
 import { crearModal, cerrarModal } from './config.js';
 
 const ESTADO_COLORS = {
@@ -316,7 +317,11 @@ async function abrirModalNuevaFactura() {
       created_by: user?.id,
     }]).select().single();
 
-    if (error) { showToast(`❌ ${error.message}`); return; }
+    if (error) {
+      console.error('[Facturación] crearFactura:', error);
+      showToast('❌ ' + formatSupabaseError(error, 'factura'));
+      return;
+    }
 
     const itemsPayload = items.map((it, i) => ({
       factura_id:    factura.id,
@@ -328,7 +333,8 @@ async function abrirModalNuevaFactura() {
     }));
     await supabase.from('factura_items').insert(itemsPayload);
 
-    showToast(`✅ Factura #${String(factura.numero).padStart(6,'0')} emitida`);
+    const totalMostrar = `$${Number(factura.total || 0).toLocaleString('es-AR')}`;
+    showToast(`✅ Factura #${String(factura.numero).padStart(6,'0')} emitida por ${totalMostrar}`);
     cerrarModal('modalNuevaFactura');
     const cont = document.getElementById('facContent');
     if (cont) await renderListaFacturas(cont);
@@ -463,7 +469,11 @@ async function abrirModalPago(facturaId) {
       created_by:  user?.id,
     }]);
 
-    if (error) { showToast(`❌ ${error.message}`); return; }
+    if (error) {
+      console.error('[Facturación] registrarPago:', error);
+      showToast('❌ ' + formatSupabaseError(error, 'pago'));
+      return;
+    }
 
     // También registrar en caja si hay caja abierta
     try {
@@ -482,7 +492,8 @@ async function abrirModalPago(facturaId) {
       }
     } catch (e) { /* noop */ }
 
-    showToast('✅ Pago registrado');
+    const cobradoMostrar = `$${monto.toLocaleString('es-AR')}`;
+    showToast(`✅ Pago de ${cobradoMostrar} registrado en factura #${String(f.numero).padStart(6,'0')}`);
     cerrarModal('modalPago');
     const cont = document.getElementById('facContent');
     if (cont) await renderListaFacturas(cont);
