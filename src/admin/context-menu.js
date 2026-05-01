@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase.js';
 import { escapeHtml, escapeAttr, showToast } from '../lib/dom.js';
 import { crearModal, cerrarModal } from './config.js';
 import { abrirConfigHorarios, abrirExcepciones } from './horarios.js';
+import { abrirFichaProfesional } from './ficha-profesional.js';
 
 let _menuActivo = null;
 
@@ -340,6 +341,24 @@ function construirMenuPaciente(pacId) {
 // ============================================================
 //  ACCIONES sobre profesional
 // ============================================================
+
+/**
+ * Abre el modal "Nuevo Turno" con profesional + especialidad pre-cargados.
+ * Pensado para el botón "+ Turno" de la card del profesional.
+ */
+function abrirNuevoTurnoConProfesional(profId) {
+  const prof = (window.PROFESIONALES_DATA || []).find(p => String(p.id) === String(profId));
+  if (!prof) { showToast('⚠️ Profesional no encontrado'); return; }
+
+  if (typeof window.openModal === 'function') window.openModal('modalNuevoTurno');
+
+  setTimeout(() => {
+    const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+    setVal('turnoProf', prof.nombre);
+    if (prof.esp) setVal('turnoEsp', prof.esp);
+    showToast(`📅 Nuevo turno para ${prof.nombre}. Solo falta paciente, fecha y hora.`);
+  }, 80);
+}
 
 async function verAgendaProfesional(profId) {
   const prof = (window.PROFESIONALES_DATA || []).find(p => String(p.id) === String(profId));
@@ -693,7 +712,11 @@ export function instalarContextMenuPacientes() {
       ev.stopPropagation();
       const action = btnProf.getAttribute('data-prof-action');
       const profId = btnProf.getAttribute('data-prof-id-action');
-      if (action === 'ver-agenda')        verAgendaProfesional(profId);
+      // Acciones nuevas (ficha unificada)
+      if (action === 'ficha')             abrirFichaProfesional(profId);
+      else if (action === 'nuevo-turno')  abrirNuevoTurnoConProfesional(profId);
+      // Acciones legacy (siguen funcionando vía menú contextual / click derecho)
+      else if (action === 'ver-agenda')   verAgendaProfesional(profId);
       else if (action === 'liquidar')     generarLiquidacionProf(profId);
       else if (action === 'horarios')     abrirConfigHorarios(profId);
       else if (action === 'excepciones')  abrirExcepciones(profId);

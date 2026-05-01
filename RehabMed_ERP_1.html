@@ -4238,11 +4238,9 @@ function renderProfesionales() {
         <div class="progress-bar"><div class="progress-fill progress-sky" style="width:${pct}%"></div></div>
         <span style="font-size:11px;color:var(--text3)">${pct}% cap.</span>
       </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap">
-        <button class="btn btn-emerald btn-sm" style="flex:1 1 calc(50% - 3px);justify-content:center;font-size:11px" data-prof-action="ver-agenda" data-prof-id-action="${p.id}">📋 Agenda</button>
-        <button class="btn btn-sky btn-sm" style="flex:1 1 calc(50% - 3px);justify-content:center;font-size:11px" data-prof-action="liquidar" data-prof-id-action="${p.id}">💰 Liquidar</button>
-        <button class="btn btn-violet btn-sm" style="flex:1 1 calc(50% - 3px);justify-content:center;font-size:11px" data-prof-action="horarios" data-prof-id-action="${p.id}" title="Configurar días y franjas de atención">🕐 Horarios</button>
-        <button class="btn btn-amber btn-sm" style="flex:1 1 calc(50% - 3px);justify-content:center;font-size:11px" data-prof-action="excepciones" data-prof-id-action="${p.id}" title="Feriados, vacaciones, ausencias">📆 Excepciones</button>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sky btn-sm" style="flex:1.5;justify-content:center;font-size:12px" data-prof-action="ficha" data-prof-id-action="${p.id}" title="Ver ficha completa: configuración + agenda semanal">📋 Ver ficha</button>
+        <button class="btn btn-emerald btn-sm" style="flex:1;justify-content:center;font-size:12px" data-prof-action="nuevo-turno" data-prof-id-action="${p.id}" title="Crear turno para este profesional">+ Turno</button>
       </div>
     </div>`;
   }).join('');
