@@ -3,6 +3,7 @@
 // ============================================================
 import { supabase } from '../lib/supabase.js';
 import { escapeHtml, escapeAttr, showToast } from '../lib/dom.js';
+import { formatSupabaseError } from '../lib/errors.js';
 import { crearModal, cerrarModal } from './config.js';
 
 const DIAS = [
@@ -117,19 +118,26 @@ export async function abrirConfigHorarios(profId) {
       min_anticipacion_hs: parseInt(modal.querySelector('#horAntic').value) || 0,
     }).eq('id', profId);
 
-    if (errProf) { showToast(`❌ ${errProf.message}`); return; }
+    if (errProf) {
+      console.error('[Horarios]', errProf);
+      showToast('❌ ' + formatSupabaseError(errProf, 'horario'));
+      return;
+    }
 
     // Reemplazar horarios: borrar anteriores e insertar nuevos
-    // (estrategia simple, no óptima pero entendible)
     await supabase.from('profesionales_horarios')
       .delete().eq('profesional_id', profId);
 
     if (nuevos.length > 0) {
       const { error } = await supabase.from('profesionales_horarios').insert(nuevos);
-      if (error) { showToast(`❌ ${error.message}`); return; }
+      if (error) {
+        console.error('[Horarios]', error);
+        showToast('❌ ' + formatSupabaseError(error, 'horario'));
+        return;
+      }
     }
 
-    showToast(`✅ Horarios guardados — ${nuevos.length} franjas activas`);
+    showToast(`✅ ${nuevos.length} franja${nuevos.length !== 1 ? 's' : ''} guardada${nuevos.length !== 1 ? 's' : ''}.`);
     cerrarModal('modalHorarios');
   };
 }
@@ -253,7 +261,11 @@ export async function abrirExcepciones(profId) {
     payload.created_by = user?.id;
 
     const { error } = await supabase.from('profesionales_excepciones').insert([payload]);
-    if (error) { showToast(`❌ ${error.message}`); return; }
+    if (error) {
+      console.error('[Horarios] insert excepción:', error);
+      showToast('❌ ' + formatSupabaseError(error, 'excepción'));
+      return;
+    }
 
     showToast('✅ Excepción registrada');
     cerrarModal('modalExcepciones');
@@ -267,9 +279,13 @@ export async function abrirExcepciones(profId) {
     if (!confirm('¿Eliminar esta excepción?')) return;
     const id = btn.getAttribute('data-del-exc');
     const { error } = await supabase.from('profesionales_excepciones').delete().eq('id', id);
-    if (error) { showToast(`❌ ${error.message}`); return; }
+    if (error) {
+      console.error('[Horarios] delete excepción:', error);
+      showToast('❌ ' + formatSupabaseError(error, 'excepción'));
+      return;
+    }
     btn.closest('[data-exc-row]').remove();
-    showToast('✅ Excepción eliminada');
+    showToast('🗑️ Excepción eliminada');
   });
 }
 
