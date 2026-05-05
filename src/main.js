@@ -10,6 +10,8 @@ import { instalarAdminUsuarios } from './admin-usuarios.js';
 import { instalarAdminPanel } from './admin/index.js';
 import { instalarConsolidacionSidebar } from './sidebar-consolidacion.js';
 import { instalarContextMenuPacientes } from './admin/context-menu.js';
+import './admin/ficha-paciente.js';                          // expone window.abrirFichaPaciente
+import { instalarSlotPicker } from './admin/slot-picker.js'; // sugiere horarios libres en Nuevo Turno
 
 // Exponer al HTML (onclick inline en el HTML legacy)
 window.doLogin  = doLogin;
@@ -57,6 +59,9 @@ async function iniciarERP() {
 
   // 1g. Menú contextual (click derecho) en rows de pacientes
   instalarContextMenuPacientes();
+
+  // 1h. Slot picker en modal Nuevo Turno (sugiere horarios libres)
+  instalarSlotPicker();
 
   // 2. Realtime + agenda de hoy
   suscribirRealtime();

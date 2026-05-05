@@ -2248,6 +2248,15 @@ Respondé con el número de tu opción 👇</textarea>
       <div class="form-group"><label class="form-label">Hora *</label><input class="form-input" id="turnoHora" type="time" value="09:00"></div>
     </div>
 
+    <!-- SLOTS DISPONIBLES (se llena dinámicamente al elegir profesional + fecha) -->
+    <div id="turnoSlotsWrap" style="display:none;margin-top:-6px;margin-bottom:14px">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;display:flex;align-items:center;gap:6px">
+        <span id="turnoSlotsTitulo">⏳ Buscando horarios disponibles...</span>
+        <span id="turnoSlotsResumen" style="margin-left:auto;color:var(--text4)"></span>
+      </div>
+      <div id="turnoSlotsList" style="display:flex;flex-wrap:wrap;gap:6px;padding:8px;background:var(--bg);border-radius:8px;max-height:140px;overflow-y:auto"></div>
+    </div>
+
     <!-- ESPECIALIDAD + TIPO -->
     <div class="form-row">
       <div class="form-group"><label class="form-label">Especialidad</label><select class="form-select" id="turnoEsp"><option>Kinesiología</option><option>Fisioterapia</option><option>Psicología</option><option>Traumatología</option><option>Neurología</option><option>Deportología</option></select></div>
@@ -5869,9 +5878,12 @@ renderPacientes = function(data){
   tb.innerHTML = data.map(p => {
     const scoreColor = p.score > 90 ? 'var(--emerald)' : p.score > 70 ? 'var(--amber)' : 'var(--rose)';
     const scorePct = p.score + '%';
+    // IDs van entre quotes para que funcionen UUIDs (tipo '823b3259-dd3c-...')
+    const idQ = `'${p.id}'`;
+    const nombreEsc = (p.nombre || '').replace(/'/g, "\\'");
     return `
     <tr class="interactive-row">
-      <td onclick="showHCL(${p.id})" style="cursor:pointer"><div style="display:flex;align-items:center;gap:10px">
+      <td onclick="abrirFichaPaciente(${idQ})" style="cursor:pointer"><div style="display:flex;align-items:center;gap:10px">
         <div class="avatar avatar-sm">${p.nombre.split(' ').map(w=>w[0]).slice(0,2).join('')}</div>
         <div><span style="font-weight:700;color:var(--sky);text-decoration:underline dotted;text-underline-offset:3px">${p.nombre}</span><div style="font-size:10px;color:var(--text4);font-family:var(--mono)">${p.ref}</div></div>
       </div></td>
@@ -5887,11 +5899,11 @@ renderPacientes = function(data){
           <span style="font-size:11px;font-weight:700;color:${scoreColor}">${p.score}</span>
         </div>
       </td>
-      <td style="font-weight:700;${p.deuda>0?'color:var(--rose);cursor:pointer' : 'color:var(--emerald)'}" ${p.deuda>0?`onclick="navigateToDeuda(${p.id})" title="Ver facturas pendientes"`:``}>${p.deuda>0?'$'+p.deuda.toLocaleString('es-AR'):'Al día'}</td>
+      <td style="font-weight:700;${p.deuda>0?'color:var(--rose);cursor:pointer' : 'color:var(--emerald)'}" ${p.deuda>0?`onclick="abrirFichaPaciente(${idQ},'ctacte')" title="Ver facturas pendientes"`:``}>${p.deuda>0?'$'+p.deuda.toLocaleString('es-AR'):'Al día'}</td>
       <td><div style="display:flex;gap:4px">
-        <button class="btn btn-ghost btn-sm" onclick="showHCL(${p.id})">HCl</button>
-        <button class="btn btn-ghost btn-sm" style="font-size:10px;padding:4px 6px" onclick="showToast('📲 WA a ${p.nombre}')" title="WhatsApp">📲</button>
-        <button class="btn btn-ghost btn-sm" style="font-size:10px;padding:4px 6px" onclick="quickAgendarPaciente(${p.id})" title="Agendar turno">📅</button>
+        <button class="btn btn-sky btn-sm" style="font-size:10px;padding:4px 8px" onclick="abrirFichaPaciente(${idQ})" title="Ver ficha completa">📋 Ficha</button>
+        <button class="btn btn-ghost btn-sm" style="font-size:10px;padding:4px 6px" onclick="abrirFichaPaciente(${idQ},'editar')" title="Editar datos">✏️</button>
+        <button class="btn btn-ghost btn-sm" style="font-size:10px;padding:4px 6px" onclick="quickAgendarPaciente(${idQ})" title="Agendar turno">📅</button>
       </div></td>
     </tr>`;
   }).join('');
