@@ -14,6 +14,7 @@ import './admin/ficha-paciente.js';                          // expone window.ab
 import { instalarSlotPicker } from './admin/slot-picker.js'; // sugiere horarios libres en Nuevo Turno
 import { instalarProveedores } from './admin/proveedores.js'; // CRUD proveedores + archivos
 import './admin/autorizaciones.js';                            // expone window.AutorizacionesMod
+import { instalarReportesPro } from './admin/reportes-pro.js'; // módulo de reportería con export Excel
 
 // Exponer al HTML (onclick inline en el HTML legacy)
 window.doLogin  = doLogin;
@@ -67,6 +68,9 @@ async function iniciarERP() {
 
   // 1i. Proveedores: CRUD + archivos (reemplaza array legacy CT_PROVEEDORES)
   await instalarProveedores();
+
+  // 1j. Reportes Pro: reemplaza módulo BI legacy con vistas SQL + export Excel
+  instalarReportesPro();
 
   // 2. Realtime + agenda de hoy
   suscribirRealtime();
