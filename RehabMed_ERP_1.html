@@ -2735,16 +2735,192 @@ Respondé con el número de tu opción 👇</textarea>
 
 <!-- NUEVO PROVEEDOR -->
 <div class="modal-overlay" id="modalNuevoProv" onclick="if(event.target===this) closeModal('modalNuevoProv')">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">📦 Nuevo Proveedor</div>
-      <button class="btn btn-ghost btn-sm" onclick="closeModal('modalNuevoProv')">✕</button>
+  <div class="modal" style="width:720px;max-width:96vw;max-height:92vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:14px;position:sticky;top:-28px;background:var(--bg3);padding:12px 0;z-index:1">
+      <div>
+        <div class="modal-title" id="modalProvTitle" style="margin-bottom:2px">📦 Nuevo Proveedor</div>
+        <div style="font-size:11px;color:var(--text3);font-weight:500">Solo Razón Social y CUIT son obligatorios. El resto se puede completar después.</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modalNuevoProv')">×</button>
     </div>
-    <div class="modal-body">
-      <div class="form-group"><label>Nombre (Razón Social)</label><input type="text" class="input" id="provNom"></div>
-      <div class="form-group"><label>Categoría / Rubro</label><input type="text" class="input" id="provCat" placeholder="Ej: Farmacia, Equipamiento"></div>
-      <div class="form-group"><label>Teléfono de Contacto</label><input type="text" class="input" id="provTel"></div>
-      <button class="btn btn-sky" style="width:100%;margin-top:10px" onclick="guardarNuevoProv()">Guardar Proveedor</button>
+
+    <!-- ╔════════ DATOS BÁSICOS (visible) ════════╗ -->
+    <div style="font-size:11px;font-weight:700;color:var(--sky);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);padding-bottom:8px">📦 Datos Básicos</div>
+    <div class="form-group"><label class="form-label">Razón social *</label><input class="form-input" id="provRazon" placeholder="Ej: MedSupply Argentina S.A."></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">CUIT *</label><input class="form-input" id="provCuit" placeholder="30-12345678-9"></div>
+      <div class="form-group"><label class="form-label">Nombre fantasía</label><input class="form-input" id="provFantasia" placeholder="MedSupply"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Categoría</label>
+        <input class="form-input" id="provCategoria" list="provCategoriasList" placeholder="Ej: Insumos médicos">
+        <datalist id="provCategoriasList">
+          <option>Insumos médicos</option><option>Equipamiento</option><option>Farmacia</option>
+          <option>Higiene y limpieza</option><option>Tecnología</option><option>Servicios profesionales</option>
+          <option>Mantenimiento</option><option>Papelería</option><option>Catering</option>
+        </datalist>
+      </div>
+      <div class="form-group"><label class="form-label">Rubro / subcategoría</label><input class="form-input" id="provRubro" placeholder="Ej: Vendas, electroterapia..."></div>
+    </div>
+
+    <!-- ╔════════ DATOS FISCALES (acordeón abierto) ════════╗ -->
+    <details open style="margin:18px 0 0">
+      <summary style="cursor:pointer;list-style:none;outline:none;font-size:11px;font-weight:700;color:var(--violet);text-transform:uppercase;letter-spacing:0.08em;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:10px">
+        <span>🏛️ Datos Fiscales</span>
+        <span style="margin-left:auto;font-size:13px;color:var(--text4);text-transform:none;letter-spacing:0;font-weight:500">click para mostrar/ocultar</span>
+      </summary>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Condición frente al IVA</label>
+          <select class="form-select" id="provCondIva">
+            <option value="">No especifica</option>
+            <option>Responsable Inscripto</option>
+            <option>Monotributista</option>
+            <option>Exento</option>
+            <option>Consumidor Final</option>
+            <option>No Responsable</option>
+            <option>Sujeto No Categorizado</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Nº Ingresos Brutos</label><input class="form-input" id="provIIBB" placeholder="Nº de inscripción IIBB"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Jurisdicción IIBB</label>
+          <select class="form-select" id="provIIBBJur">
+            <option value="">—</option>
+            <option>CABA</option><option>Buenos Aires</option><option>Córdoba</option>
+            <option>Santa Fe</option><option>Mendoza</option><option>Convenio multilateral</option>
+            <option>Otra</option>
+          </select>
+        </div>
+        <div class="form-group" style="display:flex;flex-direction:column;justify-content:flex-end;gap:6px">
+          <label style="font-size:12px;color:var(--text3);display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="checkbox" id="provIIBBExento" style="width:14px;height:14px;accent-color:var(--violet)">Exento de IIBB
+          </label>
+          <label style="font-size:12px;color:var(--text3);display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="checkbox" id="provAgRet" style="width:14px;height:14px;accent-color:var(--violet)">Agente de retención
+          </label>
+          <label style="font-size:12px;color:var(--text3);display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="checkbox" id="provAgPerc" style="width:14px;height:14px;accent-color:var(--violet)">Agente de percepción
+          </label>
+        </div>
+      </div>
+    </details>
+
+    <!-- ╔════════ CONTACTO (acordeón cerrado) ════════╗ -->
+    <details style="margin:0">
+      <summary style="cursor:pointer;list-style:none;outline:none;font-size:11px;font-weight:700;color:var(--emerald);text-transform:uppercase;letter-spacing:0.08em;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);padding-bottom:8px;margin:18px 0 10px">
+        <span>📞 Contacto y Domicilio</span>
+        <span style="margin-left:auto;font-size:13px;color:var(--text4);text-transform:none;letter-spacing:0;font-weight:500">click para expandir</span>
+      </summary>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Persona de contacto</label><input class="form-input" id="provContacto" placeholder="Nombre y apellido"></div>
+        <div class="form-group"><label class="form-label">Cargo</label><input class="form-input" id="provCargo" placeholder="Ej: Vendedor, Cuenta key..."></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="provEmail" type="email" placeholder="contacto@empresa.com"></div>
+        <div class="form-group"><label class="form-label">Web</label><input class="form-input" id="provWeb" placeholder="empresa.com.ar"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Teléfono</label><input class="form-input" id="provTel" placeholder="+54 11 XXXX-XXXX"></div>
+        <div class="form-group"><label class="form-label">Tel. alternativo</label><input class="form-input" id="provTel2" placeholder="+54 11 XXXX-XXXX"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Dirección</label><input class="form-input" id="provDir" placeholder="Calle, Número, Piso/Depto"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Localidad</label><input class="form-input" id="provLocalidad"></div>
+        <div class="form-group"><label class="form-label">Provincia</label><input class="form-input" id="provProvincia"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Código Postal</label><input class="form-input" id="provCP"></div>
+        <div class="form-group"><label class="form-label">País</label><input class="form-input" id="provPais" value="Argentina"></div>
+      </div>
+    </details>
+
+    <!-- ╔════════ CONDICIONES COMERCIALES (acordeón cerrado) ════════╗ -->
+    <details style="margin:0">
+      <summary style="cursor:pointer;list-style:none;outline:none;font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:0.08em;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);padding-bottom:8px;margin:18px 0 10px">
+        <span>💰 Condiciones Comerciales</span>
+        <span style="margin-left:auto;font-size:13px;color:var(--text4);text-transform:none;letter-spacing:0;font-weight:500">click para expandir</span>
+      </summary>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Condición de pago</label>
+          <select class="form-select" id="provCondPago">
+            <option>Contado</option>
+            <option>7 dias</option>
+            <option>15 dias</option>
+            <option>21 dias</option>
+            <option>30 dias</option>
+            <option>30/60</option>
+            <option>30/60/90</option>
+            <option>60 dias</option>
+            <option>90 dias</option>
+            <option>Anticipado</option>
+            <option>A convenir</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Días de plazo</label>
+          <input class="form-input" id="provDiasPlazo" type="number" min="0" max="365" value="0">
+          <div style="font-size:10px;color:var(--text4);margin-top:2px">Para alertas de vencimiento de facturas</div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Límite de crédito</label>
+          <input class="form-input" id="provLimite" type="number" min="0" step="1000" placeholder="0">
+        </div>
+        <div class="form-group"><label class="form-label">Moneda</label>
+          <select class="form-select" id="provMoneda">
+            <option>ARS</option><option>USD</option><option>EUR</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Descuento habitual (%)</label>
+        <input class="form-input" id="provDescuento" type="number" min="0" max="100" step="0.5" value="0">
+      </div>
+    </details>
+
+    <!-- ╔════════ DATOS BANCARIOS (acordeón cerrado) ════════╗ -->
+    <details style="margin:0">
+      <summary style="cursor:pointer;list-style:none;outline:none;font-size:11px;font-weight:700;color:var(--sky2);text-transform:uppercase;letter-spacing:0.08em;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);padding-bottom:8px;margin:18px 0 10px">
+        <span>🏦 Datos Bancarios</span>
+        <span style="margin-left:auto;font-size:13px;color:var(--text4);text-transform:none;letter-spacing:0;font-weight:500">click para expandir</span>
+      </summary>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Banco</label><input class="form-input" id="provBanco" placeholder="Ej: Galicia, Santander..."></div>
+        <div class="form-group"><label class="form-label">Tipo de cuenta</label>
+          <select class="form-select" id="provTipoCuenta">
+            <option value="">—</option>
+            <option>Cuenta Corriente</option>
+            <option>Caja de Ahorro</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">CBU</label><input class="form-input" id="provCBU" placeholder="22 dígitos" maxlength="22"></div>
+      <div class="form-group"><label class="form-label">Alias CBU</label><input class="form-input" id="provAliasCBU" placeholder="ALIAS.PROVEEDOR"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Titular</label><input class="form-input" id="provTitular" placeholder="Razón social del titular"></div>
+        <div class="form-group"><label class="form-label">CUIT del titular</label><input class="form-input" id="provTitularCuit" placeholder="Si es distinto al del proveedor"></div>
+      </div>
+    </details>
+
+    <!-- ╔════════ NOTAS (acordeón cerrado) ════════╗ -->
+    <details style="margin:0">
+      <summary style="cursor:pointer;list-style:none;outline:none;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);padding-bottom:8px;margin:18px 0 10px">
+        <span>📝 Notas internas</span>
+        <span style="margin-left:auto;font-size:13px;color:var(--text4);text-transform:none;letter-spacing:0;font-weight:500">click para expandir</span>
+      </summary>
+      <div class="form-group"><label class="form-label">Observaciones</label>
+        <textarea class="form-input" id="provNotas" rows="3" style="resize:vertical;min-height:60px" placeholder="Notas internas, condiciones especiales, contactos secundarios, etc."></textarea>
+      </div>
+    </details>
+
+    <!-- Hint sobre archivos -->
+    <div style="background:rgba(3,105,161,0.06);border:1px solid rgba(3,105,161,0.2);border-radius:10px;padding:12px;margin-top:18px;font-size:12px;color:var(--text2);display:flex;gap:10px;align-items:flex-start">
+      <span style="font-size:18px;flex-shrink:0">📎</span>
+      <span>Después de crear el proveedor vas a poder <strong>subir contratos, facturas y otros documentos</strong> desde la lista, con el botón "Ver ficha".</span>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px;position:sticky;bottom:-28px;background:var(--bg3);padding:12px 0;border-top:1px solid var(--border)">
+      <button class="btn btn-ghost" onclick="closeModal('modalNuevoProv')">Cancelar</button>
+      <button class="btn btn-sky" id="btnGuardarProv" onclick="guardarNuevoProv()">Crear proveedor</button>
     </div>
   </div>
 </div>
