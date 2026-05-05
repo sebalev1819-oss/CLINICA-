@@ -13,6 +13,7 @@ import { instalarContextMenuPacientes } from './admin/context-menu.js';
 import './admin/ficha-paciente.js';                          // expone window.abrirFichaPaciente
 import { instalarSlotPicker } from './admin/slot-picker.js'; // sugiere horarios libres en Nuevo Turno
 import { instalarProveedores } from './admin/proveedores.js'; // CRUD proveedores + archivos
+import './admin/autorizaciones.js';                            // expone window.AutorizacionesMod
 
 // Exponer al HTML (onclick inline en el HTML legacy)
 window.doLogin  = doLogin;
