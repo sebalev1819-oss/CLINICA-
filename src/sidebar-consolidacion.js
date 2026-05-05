@@ -2,23 +2,14 @@
 //  RehabMed ERP — Consolidación del sidebar
 //
 //  Junta módulos relacionados bajo un solo item con tabs:
-//    📊 Contabilidad & BI     → tabs: Contabilidad / BI & Analytics
-//    📢 Marketing & CRM       → tabs: Marketing / CRM & Ventas
+//    📢 Comercial → tabs: Marketing / CRM & Ventas
 //
-//  Oculta los 4 items originales y agrega 2 nuevos consolidados.
+//  El item "Reportes" (antes "BI & Analytics") queda directo en
+//  el sidebar como acceso rápido al módulo de reportería pro.
+//  La sección Contabilidad sigue como item independiente.
 // ============================================================
 
 const GRUPOS = [
-  {
-    id:         'contabilidad',
-    icon:       '📊',
-    label:      'Contabilidad',
-    section:    'ESTRATÉGICO',
-    modulos: [
-      { mod: 'contabilidad', label: 'Contabilidad' },
-      { mod: 'bi',           label: 'BI & Analytics' },
-    ],
-  },
   {
     id:      'comercial',
     icon:    '📢',
