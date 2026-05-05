@@ -14,6 +14,10 @@ import { supabase } from '../lib/supabase.js';
 import { escapeHtml, escapeAttr, showToast } from '../lib/dom.js';
 import { formatSupabaseError } from '../lib/errors.js';
 import { crearModal, cerrarModal } from './config.js';
+import {
+  cargarAutorizacionesPaciente,
+  renderTarjetasAutorizaciones,
+} from './autorizaciones.js';
 
 const COLOR_ESTADO = {
   'Pendiente':    { bg: '#fef3c7', text: '#92400e' },
@@ -59,6 +63,8 @@ export async function abrirFichaPaciente(pacId, tabInicial = 'datos') {
     cambiarTab('historial');
   } else if (_tabActiva === 'ctacte') {
     cambiarTab('ctacte');
+  } else if (_tabActiva === 'autorizaciones') {
+    cambiarTab('autorizaciones');
   } else {
     await renderTabDatos(tabInicial === 'editar');
   }
@@ -94,9 +100,12 @@ function renderEsqueleto(pac) {
       </div>
 
       <!-- TABS -->
-      <div style="display:flex;gap:2px;margin-top:14px;background:var(--bg);border-radius:8px;padding:4px;width:fit-content">
+      <div style="display:flex;gap:2px;margin-top:14px;background:var(--bg);border-radius:8px;padding:4px;width:fit-content;flex-wrap:wrap">
         ${tabBtn('datos', '📋 Datos', _tabActiva === 'datos')}
-        ${tabBtn('historial', '📅 Historial de turnos', _tabActiva === 'historial')}
+        ${tabBtn('historial', '📅 Historial', _tabActiva === 'historial')}
+        ${pac.cobertura && pac.cobertura !== 'Particular'
+          ? tabBtn('autorizaciones', '📋 Autorizaciones', _tabActiva === 'autorizaciones')
+          : ''}
         ${tabBtn('ctacte', '💰 Cuenta corriente', _tabActiva === 'ctacte')}
         ${tabBtn('hcl', '📝 Evoluciones', _tabActiva === 'hcl')}
       </div>
@@ -125,8 +134,35 @@ function cambiarTab(tab) {
 
   if (tab === 'datos') renderTabDatos(false);
   else if (tab === 'historial') renderTabHistorial();
+  else if (tab === 'autorizaciones') renderTabAutorizaciones();
   else if (tab === 'ctacte') renderTabCtaCte();
   else if (tab === 'hcl') renderTabEvoluciones();
+}
+
+// ============================================================
+//  TAB — AUTORIZACIONES (solo si cobertura ≠ Particular)
+// ============================================================
+async function renderTabAutorizaciones() {
+  const cont = _modalActual.querySelector('#fichaPacContent');
+  cont.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text4)">⏳ Cargando autorizaciones...</div>';
+
+  const autorizaciones = await cargarAutorizacionesPaciente(_pacActual.id);
+
+  // Verificar que el paciente NO sea particular
+  if (_pacActual.cobertura === 'Particular') {
+    cont.innerHTML = `
+      <div style="text-align:center;padding:40px;background:var(--bg3);border-radius:12px">
+        <div style="font-size:36px;margin-bottom:10px">💰</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px">Paciente particular</div>
+        <div style="font-size:12px;color:var(--text4)">Las autorizaciones aplican solo a pacientes con cobertura de obra social o prepaga.</div>
+      </div>`;
+    return;
+  }
+
+  renderTarjetasAutorizaciones(cont, autorizaciones, {
+    pacienteId: _pacActual.id,
+    mostrarBotonCrear: true,
+  });
 }
 
 // ============================================================

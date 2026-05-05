@@ -2444,6 +2444,152 @@ Respondé con el número de tu opción 👇</textarea>
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════
+     MODAL: Nueva / Editar Autorización (de Obra Social / Prepaga)
+     ═══════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalAutorizacion" onclick="if(event.target===this) closeModal('modalAutorizacion')">
+  <div class="modal" style="width:680px;max-width:96vw;max-height:92vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:14px;position:sticky;top:-28px;background:var(--bg3);padding:12px 0;z-index:1">
+      <div>
+        <div class="modal-title" id="modalAutTitle" style="margin-bottom:2px">📋 Nueva autorización</div>
+        <div style="font-size:11px;color:var(--text3);font-weight:500" id="modalAutSubtitle">Cargá los datos del comprobante de la OS o prepaga.</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modalAutorizacion')">×</button>
+    </div>
+
+    <!-- ╔═══ Datos básicos ═══╗ -->
+    <div style="font-size:11px;font-weight:700;color:var(--sky);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);padding-bottom:8px">📋 Datos de la autorización</div>
+
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Obra social / Prepaga *</label>
+        <select class="form-select" id="autObraSocial">
+          <option value="">Seleccionar...</option>
+          <optgroup label="Obras Sociales">
+            <option>IOMA</option><option>PAMI</option>
+            <option>OSDE 210</option><option>OSDE 310</option><option>OSDE 410</option>
+            <option>OSECAC</option><option>OSAM</option><option>OSPRERA</option>
+            <option>Unión Personal</option><option>OSDOP</option>
+          </optgroup>
+          <optgroup label="Prepagas">
+            <option>Swiss Medical SMG20</option><option>Swiss Medical SMG30</option>
+            <option>Galeno Azul</option><option>Galeno Oro</option>
+            <option>Medifé</option><option>Accord Salud</option>
+            <option>Omint</option><option>Sancor Salud</option><option>Jerarca</option>
+          </optgroup>
+          <optgroup label="ART">
+            <option>Provincia ART</option><option>Liberty ART</option>
+            <option>Galeno ART</option><option>SMG ART</option>
+            <option>Prevención ART</option><option>Mapfre ART</option><option>Asociart ART</option>
+          </optgroup>
+          <option>Otra</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">N° de autorización *</label>
+        <input class="form-input" id="autNumero" placeholder="Ej: AUT-2026-12345">
+      </div>
+    </div>
+
+    <div class="form-group"><label class="form-label">Prestación / Tratamiento *</label>
+      <input class="form-input" id="autPrestacion" placeholder="Ej: Sesiones de kinesiología post-LCA">
+    </div>
+
+    <div class="form-group"><label class="form-label">Descripción / Diagnóstico</label>
+      <textarea class="form-input" id="autDescripcion" rows="2" style="resize:vertical;min-height:50px" placeholder="Detalles adicionales que figuran en la autorización..."></textarea>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Profesional asignado</label>
+        <select class="form-select" id="autProfesional">
+          <option value="">Cualquier profesional</option>
+        </select>
+        <div style="font-size:10px;color:var(--text4);margin-top:2px">Dejar vacío si la autoriza para varios</div>
+      </div>
+      <div class="form-group"><label class="form-label">Estado</label>
+        <select class="form-select" id="autEstado">
+          <option value="Pendiente">⏳ Pendiente</option>
+          <option value="Aprobada" selected>✅ Aprobada</option>
+          <option value="En revisión">🔍 En revisión</option>
+          <option value="Rechazada">❌ Rechazada</option>
+          <option value="Vencida">⏰ Vencida</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ╔═══ Sesiones y frecuencia ═══╗ -->
+    <div style="font-size:11px;font-weight:700;color:var(--emerald);text-transform:uppercase;letter-spacing:0.08em;margin:18px 0 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);padding-bottom:8px">📊 Sesiones autorizadas</div>
+
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Cantidad total *</label>
+        <input class="form-input" id="autSesiones" type="number" min="0" max="999" placeholder="Ej: 12">
+        <div style="font-size:10px;color:var(--text4);margin-top:2px">Total de sesiones aprobadas</div>
+      </div>
+      <div class="form-group"><label class="form-label">Sesiones ya usadas</label>
+        <input class="form-input" id="autSesionesUsadas" type="number" min="0" value="0">
+        <div style="font-size:10px;color:var(--text4);margin-top:2px">Si ya hubo sesiones previas (default 0)</div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Frecuencia</label>
+        <select class="form-select" id="autFrecTipo">
+          <option value="">Sin restricción</option>
+          <option value="semanal">Por semana</option>
+          <option value="mensual">Por mes</option>
+          <option value="total">Total (sin frecuencia)</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Cantidad por período</label>
+        <input class="form-input" id="autFrecCant" type="number" min="0" max="20" placeholder="Ej: 3">
+        <div style="font-size:10px;color:var(--text4);margin-top:2px">Ej: 3 si son 3 sesiones por semana</div>
+      </div>
+    </div>
+
+    <!-- ╔═══ Fechas ═══╗ -->
+    <div style="font-size:11px;font-weight:700;color:var(--violet);text-transform:uppercase;letter-spacing:0.08em;margin:18px 0 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);padding-bottom:8px">📅 Vigencia</div>
+
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Fecha de solicitud</label>
+        <input class="form-input" id="autFechaSolicitud" type="date">
+      </div>
+      <div class="form-group"><label class="form-label">Fecha de inicio</label>
+        <input class="form-input" id="autFechaInicio" type="date">
+        <div style="font-size:10px;color:var(--text4);margin-top:2px">Cuándo empieza a regir</div>
+      </div>
+    </div>
+
+    <div class="form-group"><label class="form-label">Fecha de vencimiento *</label>
+      <input class="form-input" id="autFechaVenc" type="date">
+      <div style="font-size:10px;color:var(--text4);margin-top:2px">Hasta cuándo es válida. Te avisamos 10 días antes.</div>
+    </div>
+
+    <!-- ╔═══ Archivo PDF ═══╗ -->
+    <div style="font-size:11px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:0.08em;margin:18px 0 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);padding-bottom:8px">📎 Comprobante (PDF / imagen)</div>
+
+    <div id="autArchivoActualWrap" style="display:none;background:rgba(3,105,161,0.05);border-radius:8px;padding:10px;margin-bottom:10px;font-size:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span>📄 <strong id="autArchivoActualNombre">—</strong></span>
+        <button type="button" class="btn btn-ghost btn-sm" id="autArchivoVer">👁️ Ver</button>
+      </div>
+    </div>
+
+    <div class="form-group"><label class="form-label">Subir archivo</label>
+      <input type="file" id="autArchivo" accept=".pdf,.jpg,.jpeg,.png" style="font-size:12px">
+      <div style="font-size:10px;color:var(--text4);margin-top:2px">PDF, JPG, PNG · Máx 5MB · Reemplaza el existente</div>
+    </div>
+
+    <!-- ╔═══ Notas ═══╗ -->
+    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin:18px 0 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);padding-bottom:8px">📝 Notas internas</div>
+    <div class="form-group">
+      <textarea class="form-input" id="autNotas" rows="2" style="resize:vertical;min-height:50px" placeholder="Notas internas (no se comparten con el paciente)..."></textarea>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px;position:sticky;bottom:-28px;background:var(--bg3);padding:12px 0;border-top:1px solid var(--border)">
+      <button class="btn btn-ghost" onclick="closeModal('modalAutorizacion')">Cancelar</button>
+      <button class="btn btn-sky" id="btnGuardarAutorizacion">💾 Guardar autorización</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modalNuevoPaciente">
   <div class="modal" style="width:680px;max-height:90vh;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;position:sticky;top:-28px;background:var(--bg3);padding:12px 0;z-index:1">
